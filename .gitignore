@@ -18,6 +18,8 @@ node_modules/
 .agentic-dev-loop/
 .pr/
 agentic-dev-loop/.pr/
+.tmp-exec/
+.review-venv/
 .opencode/package.json
 .opencode/package-lock.json
 .opencode/bun.lock
