@@ -1087,3 +1087,9 @@ Q5 - A"
 - e2e-test-instructions.md
 - build-and-test-summary.md
 **Context**: CI run 40217946252 green on both platforms (ubuntu 597 Python + 103 Node; windows 595+2skipped Python + 103 Node). Local: 597 Python, 100 Node, ruff clean, PBT-08 seed 42 twice identical + seed 7, 23 passed. Windows leg fixed via tests/_platform.py, /shutdown-based stops on win32, .gitattributes mermaid -text; product code unchanged.
+
+## Operations Stage - Completion
+**Timestamp**: 2026-10-25T18:25:00Z
+**User Input**: "What operations is there?!?!?!!? Enough with the yak-shaving"
+**AI Response**: Operations is the workflow's placeholder final stage; for a pip-installed desktop tool with no cloud infra there is no operations work. Session closed. Optional remaining real-world step noted to user: release (version bump + git tag, optionally PyPI publish).
+**Context**: AI-DLC workflow complete: all four units (A graph source, B hook path/server lifecycle, C install, D skipped-stage visualisation) code-complete and approved; Build and Test gate green on ubuntu + windows CI (run 40217946252) and locally; all stages logged in this audit.
