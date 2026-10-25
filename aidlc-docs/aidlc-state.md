@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-24T20:20:00Z
-- **Current Stage**: CONSTRUCTION - Unit unit-d-skipped-stage - Code Generation (Part 1 approved; dev loop run pending)
+- **Current Stage**: CONSTRUCTION - Build and Test (global gate)
 
 ## Execution Plan Summary
 - **Total Stages**: 9 to execute (Application Design, Units Generation, Functional Design,

@@ -134,6 +134,7 @@ payload from stdin, forwards it, and exits 0 no matter what.
    verdicts fall back to the step's reported status.
 5. **Routes fire.** Pass and fail edges highlight, retries re-open nodes, and
    exhausting `max_rounds` routes to the `on_rounds_exhausted` terminal.
+6. **Skipped stages grey out.** A non-terminal stage the run bypassed renders skipped — grey dashed stroke and muted fill — once a later stage arrives or the run ends.
 
 ### Installer
 

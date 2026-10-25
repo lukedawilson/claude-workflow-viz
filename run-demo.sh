@@ -5,7 +5,8 @@
 # fires the Workflow PreToolUse hook so the bootstrap statically parses it, spawns the server
 # detached, waits for server.json and opens the dashboard, then simulates the update hooks by
 # POSTing the full implement progression to /ingest (including a gate failure and its loop-back
-# retry, plus verdicts for the review and verify steps). The dashboard is held open for
+# retry, plus verdicts for the review and code-review steps). The gated verify-fsm stage is
+# deliberately left without events so it renders as skipped. The dashboard is held open for
 # DEMO_HOLD_SECONDS (default 8, 0 skips the hold) before the server is stopped via /shutdown,
 # the same way SessionEnd does.
 set -u
@@ -108,8 +109,9 @@ events = [
     stop(18.0, "s1/code-review:r2", "pass", {"ran": True, "blocking": False}),
     start(19.0, "s1/classify:r2", "classifying the change"),
     stop(20.0, "s1/classify:r2", "pass", {"touchesConcurrency": False}),
-    start(21.0, "s1/verify-fsm:r2", "verifying the state machine"),
-    stop(22.0, "s1/verify-fsm:r2", "pass", {"verdict": "PASS"}),
+    # classify found no concurrency risk, so the guarded verify-fsm stage never ran.
+    # Sending no events for it: once the run finishes, the dashboard renders
+    # s1/verify-fsm:r2 as skipped (greyed out) via the Unit D inference.
 ]
 for event in events:
     post("/ingest", body=json.dumps(event))

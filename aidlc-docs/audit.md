@@ -1060,3 +1060,10 @@ Q5 - A"
 **User Response**: "1. A / 2. B - triggered by me"
 **Status**: Approved (plan A; vehicle B - user-triggered agentic-dev-loop)
 **Context**: Construction - Unit D - Code Generation Part 1 approved; dev loop armed, awaiting user run
+
+## Code Generation (Unit D) - Approval
+**Timestamp**: 2026-10-25T19:56:00Z
+**AI Prompt**: Dev loop completed for Unit D (commit d4f414f: viz-core.js +78, app.js +11, styles.css +12, viz-core.test.mjs +162; client-only as planned)
+**User Response**: "unit 4 is done. / Update run-demo.sh so it includes a skipped stage"
+**Status**: Approved
+**Context**: Construction - Unit D - Code Generation approved. run-demo.sh updated to omit the verify-fsm events (classify passes with touchesConcurrency=False, the guarded stage genuinely never runs) so the dashboard renders s1/verify-fsm:r2 as skipped via the Unit D inference. Verified: node --test green, DEMO_HOLD_SECONDS=0 ./run-demo.sh exits 0 with shutdown 204.
