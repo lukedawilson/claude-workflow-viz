@@ -1093,3 +1093,9 @@ Q5 - A"
 **User Input**: "What operations is there?!?!?!!? Enough with the yak-shaving"
 **AI Response**: Operations is the workflow's placeholder final stage; for a pip-installed desktop tool with no cloud infra there is no operations work. Session closed. Optional remaining real-world step noted to user: release (version bump + git tag, optionally PyPI publish).
 **Context**: AI-DLC workflow complete: all four units (A graph source, B hook path/server lifecycle, C install, D skipped-stage visualisation) code-complete and approved; Build and Test gate green on ubuntu + windows CI (run 40217946252) and locally; all stages logged in this audit.
+
+## Build and Test - Windows shutdown race fix
+**Timestamp**: 2026-10-25T18:05:00Z
+**User Input**: "How the fuck did your changes break the tests?!?!?!!" / "Yes, fix these fucking stupid tests so I can actually do some fucking work instead of babysititing fucking windows"
+**AI Response**: Windows CI failed once with test_server.py::test_serve_subcommand_starts_and_shuts_down_cleanly_on_interrupt (exit 1 after a 204 /shutdown) on docs-only commit 8a190d9 — identical code to the green run, so a race. Root cause: the /shutdown handler spawned a stop thread that called server_close() while the main serve() thread's finally also called server_close() — two threads closing one socket, intermittent on Windows. Product fix (not a test fix): the handler now calls shutdown() and removes the connection file itself; only the main thread ever closes the socket. Full local suite green (597 Python, 100 Node, ruff clean), demo exits 0 with shutdown 204, CI run 40219237101 green both legs.
+**Context**: Construction - Build and Test
