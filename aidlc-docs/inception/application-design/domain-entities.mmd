@@ -1,0 +1,165 @@
+classDiagram
+    direction TB
+
+    namespace existing_domain {
+        class Event {
+            +str session_id
+            +float ts
+            +EventKind kind
+            +str step_key
+            +EventStatus status
+            +str summary (max 500)
+            +str? agent_id, run_id, slice, stage
+            +int? round
+            +str? result (max 16KiB)
+        }
+        class EventKind {
+            <<enumeration>>
+            run_start, run_stop
+            step_start, step_stop
+        }
+        class EventStatus {
+            <<enumeration>>
+            running, pass, fail, unknown
+        }
+        class EventError {
+            <<enumeration>>
+            13 typed codes
+        }
+        class RunState {
+            +dict steps
+            +dict run_statuses
+            +set stopped_run_ids
+            +deque events (max 1000)
+            +subscribe_with_snapshot()
+        }
+        class Step {
+            +deque statuses (max 100)
+            +str summary
+            +bool finished
+            +latest agent_id, run_id, slice,
+            stage, round, phase, result
+        }
+        class Graph {
+            +list nodes
+            +str entry
+            +int? max_rounds
+            +str? on_rounds_exhausted
+            +str step_pattern
+            +to_yaml() str   [Unit A]
+        }
+        class Node {
+            +str id
+            +str label
+            +str? stage, step_key
+            +bool terminal
+            +str? on_pass, on_fail
+        }
+        class GraphError {
+            <<enumeration>>
+            21 typed codes
+        }
+        class Connection {
+            +int port
+            +str token
+            +read() Connection
+            +remove_if_token_matches()
+            +stop_server() None   [Unit B]
+        }
+        class VisualiserServer {
+            <<ThreadingHTTPServer>>
+            +POST /ingest
+            +GET /stream
+            +GET /graph
+            +POST /shutdown   [Unit B]
+        }
+    }
+
+    namespace unit_a_graph_source {
+        class WorkflowSource {
+            +str text
+            +Path source_path
+            +parse() Graph | ParseFailureReport
+        }
+        class ParseFailure {
+            <<abstract>>
+            +str code
+            +str message
+            +SourceLocation location
+            +str context
+        }
+        class UnsupportedLabel
+        class MissingMaxRounds
+        class UnsupportedControlFlow
+        class UnsupportedTerminal
+        class UnsupportedConditional
+        class UnsupportedParallel
+        class ParseFailureReport {
+            +list failures (source order)
+            +summarise() str
+            +build_fallback_prompt(path, viz_dir) str
+        }
+    }
+
+    namespace unit_b_hook_lifecycle {
+        class Dispatcher {
+            <<workflow hook_command>>
+            keyed on hook_event_name
+        }
+        class Bootstrap {
+            +run(payload, cwd) None (never raises)
+        }
+        class Shutdown {
+            +run() None
+        }
+    }
+
+    namespace unit_c_install {
+        class Installer {
+            +run(target_repo, viz_dir)
+            InstallOutcome (may raise)
+        }
+        class VizCommandTemplate {
+            <<packaged static resource>>
+            .claude/commands/viz.md content
+        }
+    }
+
+    namespace unit_d_skipped_stage {
+        class SkipInference {
+            <<pure function, viz-core.js>>
+            node instance presence + predecessor
+            pass + successor arrival
+        }
+    }
+
+    WorkflowSource --> Graph : parse success (D5 contract)
+    WorkflowSource --> ParseFailureReport : parse failure, failures win
+    ParseFailureReport *-- ParseFailure : collects all
+    ParseFailure <|-- UnsupportedLabel
+    ParseFailure <|-- MissingMaxRounds
+    ParseFailure <|-- UnsupportedControlFlow
+    ParseFailure <|-- UnsupportedTerminal
+    ParseFailure <|-- UnsupportedConditional
+    ParseFailure <|-- UnsupportedParallel
+    ParseFailureReport --> VizCommandTemplate : prompt instructs the /viz agent
+    Graph *-- Node : owns
+    Graph ..> GraphError : validation raises typed errors
+    RunState *-- Step : owns per step_key
+    RunState o-- Event : events deque
+    Event --> EventKind
+    Event --> EventStatus
+    Event ..> EventError : from_dict result
+    Step --> EventStatus : display_status
+    Dispatcher --> Bootstrap : Workflow PreToolUse
+    Dispatcher --> Shutdown : SessionEnd
+    Dispatcher --> Event : forwards to /ingest
+    Bootstrap --> WorkflowSource : parses invoked workflow
+    Bootstrap --> Graph : transient cache yaml via to_yaml
+    Bootstrap --> Connection : read + probe
+    Bootstrap ..> VisualiserServer : spawns detached serve process
+    Shutdown --> Connection : stop_server (POST /shutdown)
+    Installer --> VizCommandTemplate : deploys
+    Installer --> Dispatcher : verify = run hook empty-stdin
+    VisualiserServer ..> Connection : writes server.json
+    SkipInference --> Node : derives skipped state

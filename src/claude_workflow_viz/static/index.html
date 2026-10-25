@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>claude-workflow-viz</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>claude-workflow-viz</h1>
+      <span id="banner" class="banner banner-waiting">waiting</span>
+      <label>
+        Slice
+        <select id="slice-selector"></select>
+      </label>
+    </header>
+    <main>
+      <section id="graph" aria-label="Workflow graph"></section>
+      <aside id="console" aria-label="Step console" hidden>
+        <h2 id="console-title"></h2>
+        <label>
+          Round
+          <select id="round-selector"></select>
+        </label>
+        <dl>
+          <dt>Status</dt>
+          <dd id="console-status"></dd>
+          <dt>Verdict</dt>
+          <dd id="console-verdict"></dd>
+          <dt>Note</dt>
+          <dd id="console-note"></dd>
+          <dt>Summary</dt>
+          <dd id="console-summary"></dd>
+        </dl>
+        <pre id="console-result"></pre>
+      </aside>
+    </main>
+    <p id="unmapped" class="unmapped" hidden></p>
+    <p id="message" role="status"></p>
+    <script src="/static/mermaid.min.js"></script>
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

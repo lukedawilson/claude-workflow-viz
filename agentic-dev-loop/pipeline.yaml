@@ -1,0 +1,78 @@
+name: agentic-dev-loop-construction
+
+extensions:
+  - agentic_dev_loop.engine.extensions.aidlc:AidlcExtension   # bundled; loading IS choosing
+
+additional_files:                    # top-level, standalone, optional
+  - ../README.md                     # resolved relative to the pipeline file's dir;
+  - ../AGENTS.md                     # listed-but-missing → fail fast
+  - ../coding-standards-ddd.yaml
+
+llm:
+  model: openai/deepseek-v4-pro
+  base_url: https://api.deepseek.com
+  api_key_env: OPENAI_API_KEY
+  # timeout omitted → opinionated no-timeout default
+
+max_attempts: 10                     # CLI --max-attempts overrides
+agents_dir: sdk_agents               # resolved relative to the pipeline file's dir
+# 021 supply-chain dial: this repo's dogfood loop still runs the bootstrap
+# protocol (its restore step is an open install; no committed lockfile yet -
+# the consumer repos migrate to `locked` per 021 §3). `open` keeps the 018
+# restore behavior verbatim.
+deps_policy: open
+# 022 venv-boundary enforcement: keep the container-built sandbox venv OUT of
+# the workspace - it is bind-mounted in from this host dir at
+# {ws}/.venv-sandbox (rw), so `git add -A` sees no venv noise and the host
+# `.venv` stays masked (read-only empty tmpfs) from the sandbox.
+isolation:
+  sandbox_venv_dir: ~/.agentic-dev-loop/venvs/claude-workflow-viz
+
+steps:
+  - name: dev
+    agent: dev
+    produces: implementation-summary.md   # hygiene-tracked, no verdict
+    on_pass: restore
+
+  - name: restore
+    # network-on restore step (open bootstrap) + audit escalation: pip-audit
+    # fails the step on a known-CVE pin. Under `open` that failure routes to
+    # `dev` like any restore failure - dev can bump the pin, and the bumped
+    # pin is audited again on the next pass, so the loop self-corrects.
+    # pip is upgraded first (022 bootstrap hygiene): the dev image's ensurepip
+    # bundles a stale wheel, and pip is not a pyproject pin dev can bump, so
+    # the audit would otherwise deadlock on pip's own CVEs. Cheap no-op once
+    # current; keeps the audit scoped to project pins only.
+    command: .venv-sandbox/bin/pip install --upgrade pip && .venv-sandbox/bin/pip install -e . && .venv-sandbox/bin/pip install pytest ruff pip-audit && .venv-sandbox/bin/pip-audit --skip-editable
+    timeout: 600
+    network: true
+    on_pass: test
+    on_fail: { goto: dev, retry: true }
+
+  - name: test
+    command: .venv-sandbox/bin/python -m pytest tests/ -q -m "not docker"   # sandboxed: exit code is the verdict
+    setup: |-
+      { [ -x .venv-sandbox/bin/python ] && .venv-sandbox/bin/python -c 'import sys' ; } || { rm -rf .venv-sandbox/* && python -m venv .venv-sandbox ; } && .venv-sandbox/bin/pip install -e . && .venv-sandbox/bin/pip install pytest ruff
+    timeout: 600
+    on_pass: review
+    on_fail: { goto: dev, retry: true }
+
+  - name: review
+    agent: review
+    artifact: review-findings.md
+    verdicts: { pass: APPROVED, fail: NEEDS CHANGES }
+    on_pass: qa
+    on_fail: { goto: dev, retry: true }
+
+  - name: qa
+    agent: qa
+    artifact: qa-report.md
+    verdicts: { pass: PASS, fail: FAIL }
+    max_iterations: 200
+    on_pass: commit
+    on_fail: { goto: dev, retry: true }
+
+  - name: commit
+    action: commit
+    params: { message: "feat: construct {subject} (agent dev loop)" }
+    on_pass: success

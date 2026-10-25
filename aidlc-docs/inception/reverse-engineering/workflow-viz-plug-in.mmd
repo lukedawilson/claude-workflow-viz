@@ -1,0 +1,33 @@
+flowchart TB
+    subgraph repo["workflow-examples repo"]
+        direction TB
+        skill["/implement skill<br/>(thin envelope: Jira, plan, ADRs)"]
+        impl["implement.js<br/>Dynamic Workflow"]
+        agents["agent() calls:<br/>pre-flight/head-check<br/>planner, gate-baseline<br/>s1/develop:r1, s1/gate:r1, ..."]
+        skill -->|"invokes exactly once"| impl
+        impl --> agents
+    end
+
+    subgraph cc["Claude Code runtime"]
+        direction TB
+        dir["workflow run dir:<br/>session/subagents/workflows/wf_id/<br/>agent-*.jsonl + agent-*.meta.json + journal.jsonl"]
+        hooks["hooks: PreToolUse, PostToolUse (Workflow)<br/>SubagentStart, SubagentStop<br/>async, payload on stdin"]
+        agents -->|"spawns workflow-subagents"| dir
+        dir --> hooks
+    end
+
+    subgraph viz["claude-workflow-viz"]
+        direction TB
+        cmd["hook command<br/>(normalise, read meta + journal, exit 0)"]
+        server["server on 127.0.0.1<br/>POST /ingest -> RunState"]
+        sse["GET /stream (SSE)<br/>GET /graph"]
+        hooks -->|"JSON payload"| cmd
+        cmd -->|"POST /ingest, Bearer token"| server
+        server --> sse
+    end
+
+    config["examples/implement.viz.yaml<br/>(12 nodes, max_rounds 3, terminals done/blocked/needs-context)"]
+    config -->|"serve --graph"| server
+
+    browser["Browser:<br/>live Mermaid flowchart<br/>step_start lights a node, step_stop colours it"]
+    sse --> browser

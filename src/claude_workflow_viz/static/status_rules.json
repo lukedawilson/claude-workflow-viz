@@ -1,0 +1,15 @@
+{
+  "comment": "Single source of node status rules, read by Python (node_status.py) and by the browser module. Assumption: UNVERIFIED colours fail because /implement treats an unverified gate as not green.",
+  "fields": ["verdict", "status", "gate"],
+  "verdicts": {
+    "APPROVED": "pass",
+    "PASS": "pass",
+    "GREEN": "pass",
+    "SKIPPED": "pass",
+    "CHANGES_REQUESTED": "fail",
+    "FAIL": "fail",
+    "FINDING": "fail",
+    "RED": "fail",
+    "UNVERIFIED": "fail"
+  }
+}

@@ -1,0 +1,5 @@
+{"type":"launched"}
+{"type":"started","key":"v2:91fe1641586f703602bd5141a3a983814ade6ca76a249065df3bc81015321003","agentId":"aa40e04dc34ef5608","label":"slice-a/develop:r1","phase":"Probe"}
+{"type":"result","key":"v2:91fe1641586f703602bd5141a3a983814ade6ca76a249065df3bc81015321003","agentId":"aa40e04dc34ef5608","result":"ALPHA"}
+{"type":"started","key":"v2:e98d194a93784dd0b3a9c16c27eddf516669d748762878ba63e1f6a2bb659900","agentId":"a6ed92d3c1d664b07","label":"slice-a/review:r1","phase":"Probe"}
+{"type":"result","key":"v2:e98d194a93784dd0b3a9c16c27eddf516669d748762878ba63e1f6a2bb659900","agentId":"a6ed92d3c1d664b07","result":{"verdict":"PASS","note":"probe"}}

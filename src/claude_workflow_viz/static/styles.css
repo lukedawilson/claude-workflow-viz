@@ -1,0 +1,178 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  color: #1b1f24;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #d0d7de;
+}
+
+h1 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+main {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+/* The graph fills the space left under the header and is scaled to fit it, so the page never scrolls. */
+#graph {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#graph svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+}
+
+#console {
+  width: 26rem;
+  max-height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+#console-result {
+  white-space: pre-wrap;
+  background: #f6f8fa;
+  padding: 0.5rem;
+  max-height: 20rem;
+  overflow: auto;
+}
+
+#message {
+  margin: 0 1rem;
+  color: #9a3412;
+}
+
+.banner {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.banner-waiting {
+  background: #eaeef2;
+}
+
+.banner-running {
+  background: #ddf4ff;
+  color: #0550ae;
+}
+
+.banner-finished {
+  background: #dafbe1;
+  color: #116329;
+}
+
+#graph g.node {
+  cursor: pointer;
+}
+
+#graph g.node rect,
+#graph g.node path,
+#graph g.node polygon {
+  stroke-width: 2px;
+}
+
+#graph g.node.status-pending rect,
+#graph g.node.status-pending path {
+  fill: #eaeef2;
+  stroke: #8c959f;
+}
+
+#graph g.node.status-running rect,
+#graph g.node.status-running path {
+  fill: #ddf4ff;
+  stroke: #0969da;
+  animation: running-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes running-pulse {
+  50% {
+    fill: #a5d8ff;
+    stroke-width: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #graph g.node.status-running rect,
+  #graph g.node.status-running path {
+    animation: none;
+  }
+}
+
+.unmapped {
+  margin: 0;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #57606a;
+}
+
+#graph g.node.status-retry rect,
+#graph g.node.status-retry path {
+  fill: #fff8c5;
+  stroke: #bf8700;
+}
+
+#graph g.node.status-pass rect,
+#graph g.node.status-pass path {
+  fill: #dafbe1;
+  stroke: #1a7f37;
+}
+
+#graph g.node.status-fail rect,
+#graph g.node.status-fail path {
+  fill: #ffebe9;
+  stroke: #cf222e;
+}
+
+#graph g.node.selected rect,
+#graph g.node.selected path {
+  stroke-width: 4px;
+}
+
+#graph .flowchart-link.edge-active {
+  stroke: #0969da;
+  stroke-width: 3px;
+}
+
+#graph .flowchart-link.edge-loop-back {
+  stroke: #bf8700;
+  stroke-width: 3px;
+  stroke-dasharray: 8 6;
+  animation: loop-back-flow 0.8s linear infinite;
+}
+
+@keyframes loop-back-flow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}

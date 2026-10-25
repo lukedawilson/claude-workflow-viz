@@ -1,0 +1,50 @@
+flowchart TB
+    subgraph PKG["claude_workflow_viz package - existing (9 modules + init/main)"]
+        CLI["cli.py<br/>argparse: serve, hook"]
+        HOOKCMD["hook_command.py<br/>stdin -> POST /ingest"]
+        ADAPTER["hook_adapter.py<br/>normalise payload -> Event"]
+        EVENTS["events.py<br/>Event, EventError"]
+        STATE["run_state.py<br/>sessions/steps LRU"]
+        SERVER["server.py<br/>HTTP + SSE"]
+        GRAPH["graph.py<br/>strict .viz.yaml -> Graph"]
+        NODES["node_status.py<br/>verdict_status"]
+        CONN["connection_file.py<br/>server.json token"]
+    end
+
+    subgraph STATIC["static/ - existing (6 assets)"]
+        CORE["viz-core.js<br/>pure reducer"]
+        APP["app.js<br/>DOM + SSE"]
+        HTML["index.html"]
+        CSS["styles.css"]
+        RULES["status_rules.json"]
+        MERM["mermaid.min.js<br/>vendored"]
+    end
+
+    subgraph NEW["unit-1 - proposed new modules"]
+        INST["installer<br/>pipx + hooks wiring"]
+        PARSER["static parser<br/>workflow JS -> Graph"]
+        BOOT["invoke-time bootstrap<br/>start server, open dashboard"]
+    end
+
+    CLI --> HOOKCMD
+    HOOKCMD --> ADAPTER
+    HOOKCMD --> CONN
+    ADAPTER --> EVENTS
+    HOOKCMD --> SERVER
+    SERVER --> STATE
+    SERVER --> GRAPH
+    SERVER --> CONN
+    GRAPH --> NODES
+    NODES --> RULES
+    SERVER --> HTML
+    HTML --> APP
+    HTML --> CSS
+    APP --> CORE
+    APP --> MERM
+    CORE --> RULES
+
+    INST --> CLI
+    PARSER --> GRAPH
+    BOOT --> SERVER
+    BOOT --> CONN
+    BOOT --> PARSER

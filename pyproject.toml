@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-workflow-viz"
+version = "0.1.0"
+description = "Live Mermaid flowchart of a Claude Code Workflow run, driven by hooks"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+claude-workflow-viz = "claude_workflow_viz.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/claude_workflow_viz",
+    "src/claude_workflow_viz.workflow",
+    "src/claude_workflow_viz.graph",
+    "src/claude_workflow_viz.dashboard",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "N"]

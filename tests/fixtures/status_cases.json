@@ -1,0 +1,702 @@
+{
+  "_comment": "Shared by the Python tests and the browser module tests. node_status cases: `step` is a step dict as in RunState.snapshot (null = no step). run_status cases: `events` are applied in order to one session; `expected` maps run_id to status.",
+  "node_status": [
+    {
+      "name": "unstarted step is pending",
+      "step": null,
+      "expected": "pending"
+    },
+    {
+      "name": "running round 1",
+      "step": {
+        "statuses": [
+          "running"
+        ],
+        "finished": false,
+        "round": 1,
+        "result": null
+      },
+      "expected": "running"
+    },
+    {
+      "name": "running with no round",
+      "step": {
+        "statuses": [
+          "running"
+        ],
+        "finished": false,
+        "round": null,
+        "result": null
+      },
+      "expected": "running"
+    },
+    {
+      "name": "running round 2 is retry",
+      "step": {
+        "statuses": [
+          "running",
+          "fail",
+          "running"
+        ],
+        "finished": false,
+        "round": 2,
+        "result": null
+      },
+      "expected": "retry"
+    },
+    {
+      "name": "stopped with APPROVED",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "APPROVED"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with lowercase approved",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "approved"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with PASS",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "PASS"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with lowercase pass",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "pass"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with GREEN",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "GREEN"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with lowercase green",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "green"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with SKIPPED",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "SKIPPED"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with lowercase skipped",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "skipped"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped with CHANGES_REQUESTED",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "CHANGES_REQUESTED"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with lowercase changes_requested",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "changes_requested"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with FAIL",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "FAIL"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with lowercase fail",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "fail"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with FINDING",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "FINDING"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with lowercase finding",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "finding"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with RED",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "RED"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with lowercase red",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "red"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with UNVERIFIED",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "UNVERIFIED"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "stopped with lowercase unverified",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "unverified"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "status field used when verdict absent",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "status": "FAIL"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "gate field used when verdict and status absent",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "gate": "UNVERIFIED"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "verdict wins over status",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "PASS",
+          "status": "FAIL"
+        }
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "unknown verdict falls through to next field",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "MAYBE",
+          "status": "FAIL"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "no result, statuses end pass",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": null
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "no result, statuses end fail",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": null
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "result not a mapping falls back to statuses fail",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": "APPROVED"
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "result list falls back to statuses pass",
+      "step": {
+        "statuses": [
+          "running",
+          "pass"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": [
+          "FAIL"
+        ]
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "unknown verdict falls back to statuses fail",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": "MAYBE"
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "non-string verdict falls back to statuses",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 1,
+        "result": {
+          "verdict": 3
+        }
+      },
+      "expected": "fail"
+    },
+    {
+      "name": "bare stop with unknown status is pass",
+      "step": {
+        "statuses": [
+          "unknown"
+        ],
+        "finished": true,
+        "round": null,
+        "result": null
+      },
+      "expected": "pass"
+    },
+    {
+      "name": "stopped round 2 with fail verdict is fail not retry",
+      "step": {
+        "statuses": [
+          "running",
+          "fail"
+        ],
+        "finished": true,
+        "round": 2,
+        "result": {
+          "verdict": "FAIL"
+        }
+      },
+      "expected": "fail"
+    }
+  ],
+  "run_status": [
+    {
+      "name": "run_start only is running",
+      "events": [
+        {
+          "kind": "run_start",
+          "step_key": "",
+          "run_id": "r1",
+          "status": "running"
+        }
+      ],
+      "expected": {
+        "r1": "running"
+      }
+    },
+    {
+      "name": "started step keeps run running",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        }
+      ],
+      "expected": {
+        "r1": "running"
+      }
+    },
+    {
+      "name": "all steps stopped finishes run",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "step_stop",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "pass"
+        }
+      ],
+      "expected": {
+        "r1": "finished"
+      }
+    },
+    {
+      "name": "one unstopped step keeps run running",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "step_start",
+          "step_key": "b",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "step_stop",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "pass"
+        }
+      ],
+      "expected": {
+        "r1": "running"
+      }
+    },
+    {
+      "name": "run_stop finishes run",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "run_stop",
+          "step_key": "",
+          "run_id": "r1",
+          "status": "pass"
+        }
+      ],
+      "expected": {
+        "r1": "finished"
+      }
+    },
+    {
+      "name": "new start reopens finished run",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "step_stop",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "pass"
+        },
+        {
+          "kind": "step_start",
+          "step_key": "b",
+          "run_id": "r1",
+          "status": "running"
+        }
+      ],
+      "expected": {
+        "r1": "running"
+      }
+    },
+    {
+      "name": "start after run_stop leaves run finished",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "run_stop",
+          "step_key": "",
+          "run_id": "r1",
+          "status": "pass"
+        },
+        {
+          "kind": "step_start",
+          "step_key": "b",
+          "run_id": "r1",
+          "status": "running"
+        }
+      ],
+      "expected": {
+        "r1": "finished"
+      }
+    },
+    {
+      "name": "stop without start is finished",
+      "events": [
+        {
+          "kind": "step_stop",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "pass"
+        }
+      ],
+      "expected": {
+        "r1": "finished"
+      }
+    },
+    {
+      "name": "agent paired start and stop finish run",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running",
+          "agent_id": "x1"
+        },
+        {
+          "kind": "step_stop",
+          "step_key": "agent-x1",
+          "run_id": "r1",
+          "status": "pass",
+          "agent_id": "x1"
+        }
+      ],
+      "expected": {
+        "r1": "finished"
+      }
+    },
+    {
+      "name": "runs are independent",
+      "events": [
+        {
+          "kind": "step_start",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "running"
+        },
+        {
+          "kind": "step_start",
+          "step_key": "b",
+          "run_id": "r2",
+          "status": "running"
+        },
+        {
+          "kind": "step_stop",
+          "step_key": "a",
+          "run_id": "r1",
+          "status": "pass"
+        }
+      ],
+      "expected": {
+        "r1": "finished",
+        "r2": "running"
+      }
+    }
+  ]
+}

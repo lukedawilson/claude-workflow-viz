@@ -1,0 +1,17 @@
+name: implement
+entry: pre-flight
+max_rounds: 3
+on_rounds_exhausted: blocked
+nodes:
+  - {id: pre-flight, label: Pre-flight, step_key: pre-flight/head-check, on_pass: planner, on_fail: blocked}
+  - {id: planner, label: Planner, step_key: planner, on_pass: gate-baseline, on_fail: needs-context}
+  - {id: gate-baseline, label: Gate baseline, step_key: gate-baseline, on_pass: develop, on_fail: blocked}
+  - {id: develop, label: Develop, stage: develop, on_pass: gate, on_fail: blocked}
+  - {id: gate, label: Gate, stage: gate, on_pass: review, on_fail: develop}
+  - {id: review, label: Review, stage: review, on_pass: code-review, on_fail: develop}
+  - {id: code-review, label: Code review, stage: code-review, on_pass: classify, on_fail: develop}
+  - {id: classify, label: Classify, stage: classify, on_pass: verify-fsm, on_fail: blocked}
+  - {id: verify-fsm, label: Verify FSM, stage: verify-fsm, on_pass: done, on_fail: develop}
+  - {id: done, label: Done, terminal: true}
+  - {id: blocked, label: Blocked, terminal: true}
+  - {id: needs-context, label: Needs context, terminal: true}

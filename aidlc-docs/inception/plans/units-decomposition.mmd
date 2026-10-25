@@ -1,0 +1,45 @@
+flowchart TB
+    subgraph EXT["Claude Code runtime (external actor)"]
+        CC["Workflow invocation<br/>PreToolUse payload"]
+        SE["SessionEnd"]
+    end
+
+    subgraph UA["Unit A — graph source"]
+        P["graph_source/parser.py<br/>WorkflowSource"]
+        PF["graph_source/parse_failures.py<br/>ParseFailure values"]
+        AP["graph_source/agent_prompt.py"]
+        TPLC["/viz command template<br/>(content)"]
+        TOY["graph/graph.py<br/>+ to_yaml()"]
+    end
+
+    subgraph UB["Unit B — hook path / server lifecycle"]
+        DISP["workflow/hook_command.py<br/>dispatcher"]
+        BOOT["invoke/bootstrap.py"]
+        SHUT["invoke/shutdown.py"]
+        CF["dashboard/connection_file.py<br/>+ stop_server()"]
+        SRV["dashboard/server.py<br/>+ POST /shutdown"]
+    end
+
+    subgraph UC["Unit C — install"]
+        INST["install/installer.py"]
+        CLIC["cli.py<br/>+ install subcommand"]
+        DEP["template deployment"]
+    end
+
+    CC --> DISP
+    SE --> DISP
+    DISP --> BOOT
+    DISP --> SHUT
+    BOOT --> P
+    BOOT --> TOY
+    BOOT --> CF
+    SHUT --> CF
+    CF --> SRV
+    P --> PF
+    AP --> PF
+    TPLC --> DEP
+    CLIC --> INST
+    INST --> DEP
+    INST --> DISP
+    UA -.constructs after.-> UB
+    UB -.constructs after.-> UC
