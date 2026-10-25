@@ -34,8 +34,8 @@ def _build_parser() -> argparse.ArgumentParser:
     serve_parser.add_argument(
         "--port",
         type=int,
-        default=0,
-        help="port to listen on, 0 (default) lets the OS pick a free one",
+        default=8322,
+        help="port to listen on (default 8322; a busy port falls back to an OS-picked one)",
     )
     serve_parser.add_argument(
         "--graph",

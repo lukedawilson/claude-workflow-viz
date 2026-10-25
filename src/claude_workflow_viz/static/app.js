@@ -16,18 +16,22 @@ import {
   mermaidNodeIdFromElementId,
   needsGraphRefetch,
   nodeStatus,
+  sessionWorkflows,
   sliceNames,
   sliceView,
   viewClasses,
+  workflowNames,
   unmappedSteps,
 } from "./viz-core.js";
 
 const token = new URLSearchParams(location.search).get("token") ?? "";
 const query = `?token=${encodeURIComponent(token)}`;
+const urlWorkflow = new URLSearchParams(location.search).get("workflow") ?? "";
 
 const elements = {
   banner: document.getElementById("banner"),
   graph: document.getElementById("graph"),
+  workflow: document.getElementById("workflow-selector"),
   slice: document.getElementById("slice-selector"),
   round: document.getElementById("round-selector"),
   console: document.getElementById("console"),
@@ -48,6 +52,8 @@ const page = {
   snapshot: { sessions: {} },
   log: [],
   states: Object.create(null),
+  workflows: Object.create(null),
+  chosenWorkflow: urlWorkflow || null,
   sessionId: null,
   renderedFingerprint: null,
   chosenSlice: null,
@@ -67,7 +73,12 @@ function showMessage(text) {
 }
 
 async function fetchGraph() {
-  const response = await fetch(`/graph${query}`);
+  const params = new URLSearchParams({ token });
+  const workflow = activeWorkflow();
+  if (workflow) {
+    params.set("workflow", workflow);
+  }
+  const response = await fetch(`/graph?${params}`);
   if (!response.ok) {
     throw new Error(`GET /graph answered ${response.status}`);
   }
@@ -75,6 +86,14 @@ async function fetchGraph() {
   page.graph = document_.graph;
   page.source = document_.source;
   page.rules = document_.status_rules;
+}
+
+function activeWorkflow() {
+  page.workflows = sessionWorkflows(page.snapshot, page.log);
+  if (page.chosenWorkflow) {
+    return page.chosenWorkflow;
+  }
+  return page.workflows[page.sessionId] ?? "";
 }
 
 function rebuildStates() {
@@ -206,6 +225,20 @@ function renderSliceSelector() {
   fillSelect(elements.slice, names.length > 0 ? names : [""], currentSlice(state));
 }
 
+function renderWorkflowSelector() {
+  const names = workflowNames(page.workflows);
+  if (page.chosenWorkflow && !names.includes(page.chosenWorkflow)) {
+    names.unshift(page.chosenWorkflow);
+  }
+  if (names.length === 0) {
+    elements.workflow.hidden = true;
+    return;
+  }
+  elements.workflow.hidden = false;
+  const selected = page.chosenWorkflow ?? page.workflows[page.sessionId] ?? names[0];
+  fillSelect(elements.workflow, names, selected);
+}
+
 function renderConsole() {
   const state = currentState();
   if (state === null || page.selectedNode === null) {
@@ -237,6 +270,7 @@ function refresh() {
   renderBanner();
   renderUnmapped();
   renderSliceSelector();
+  renderWorkflowSelector();
   applyClasses();
   renderConsole();
 }
@@ -259,6 +293,11 @@ elements.slice.addEventListener("change", () => {
   refresh();
 });
 
+elements.workflow.addEventListener("change", async () => {
+  page.chosenWorkflow = elements.workflow.value;
+  await refetchGraph();
+});
+
 elements.round.addEventListener("change", () => {
   page.chosenRound = elements.round.value;
   renderConsole();
@@ -269,7 +308,7 @@ async function onSnapshot(message) {
   page.log = [];
   const sessionIds = Object.keys(page.snapshot.sessions ?? {});
   page.sessionId = sessionIds.at(-1) ?? page.sessionId;
-  if (page.source === "linear") {
+  if (page.source === "linear" || activeWorkflow()) {
     await fetchGraph();
   }
   rebuildStates();
@@ -279,9 +318,10 @@ async function onSnapshot(message) {
 
 async function onEvent(message) {
   const event = JSON.parse(message.data);
+  const previousWorkflow = activeWorkflow();
   page.log.push(event);
   page.sessionId = event.session_id;
-  if (needsGraphRefetch(page.source, page.graph, event)) {
+  if (needsGraphRefetch(page.source, page.graph, event) || activeWorkflow() !== previousWorkflow) {
     await fetchGraph();
     rebuildStates();
   } else {
@@ -291,6 +331,18 @@ async function onEvent(message) {
   }
   await renderGraphIfChanged();
   refresh();
+}
+
+async function refetchGraph() {
+  try {
+    await fetchGraph();
+    rebuildStates();
+    await renderGraphIfChanged();
+    refresh();
+    showMessage("");
+  } catch (error) {
+    showMessage(`graph load failed: ${error}`);
+  }
 }
 
 function sleep(seconds) {

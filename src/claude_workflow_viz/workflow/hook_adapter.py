@@ -91,6 +91,8 @@ def normalise(payload: Mapping[str, Any], now: Callable[[], float]) -> Event | N
             data.update(workflow.fields(_text(payload.get("agent_id"))))
     if payload.get("tool_name") == "Workflow" and hook_event_name == "PostToolUse":
         data["run_id"] = _text(_mapping(payload.get("tool_response")).get("runId"))
+    if payload.get("tool_name") == "Workflow" and hook_event_name == "PreToolUse":
+        data["workflow"] = _text(_mapping(payload.get("tool_input")).get("name"))
     if _is_workflow_stop(hook_event_name, payload):
         data["result"] = _journal_result(payload, _text(payload.get("agent_id")))
     event = Event.from_dict(data)

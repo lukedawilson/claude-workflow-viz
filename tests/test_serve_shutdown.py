@@ -44,6 +44,26 @@ def _stop(process, sent_signal):
         process.stderr.close()
 
 
+def test_serve_does_not_print_the_token_to_a_non_terminal_stdout(tmp_path, monkeypatch):
+    monkeypatch.setenv("CLAUDE_WORKFLOW_VIZ_STATE_DIR", str(tmp_path))
+    process, path = _start_serve(tmp_path)
+    token = Connection.read().token
+    stdout = ""
+    try:
+        time.sleep(0.3)
+        process.send_signal(signal.SIGINT)
+        process.wait(timeout=TIMEOUT_SECONDS)
+        stdout = process.stdout.read().decode("utf-8", "replace")
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+        process.stdout.close()
+        process.stderr.close()
+    assert token not in stdout
+    assert "listening on" in stdout
+
+
 @pytest.mark.parametrize("sent_signal", [signal.SIGINT, signal.SIGTERM])
 def test_serve_removes_its_connection_file_on_signal(tmp_path, sent_signal):
     process, path = _start_serve(tmp_path)

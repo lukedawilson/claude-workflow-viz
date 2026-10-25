@@ -208,3 +208,53 @@ def test_workflow_stop_with_missing_meta_is_silent(tmp_path, monkeypatch, capsys
     }
     _stdin(monkeypatch, json.dumps(payload))
     _assert_silent_success(capsys)
+
+
+# --- dispatcher branching (D10/R9) -----------------------------------------------------------
+
+
+def test_session_end_stops_server_without_forwarding(running, monkeypatch, capsys):
+    stopped = []
+    monkeypatch.setattr(Connection, "stop_server", lambda: stopped.append(True))
+
+    def explode(_payload, _now):
+        raise AssertionError("SessionEnd must not forward")
+
+    monkeypatch.setattr(hook_command, "normalise", explode)
+    _stdin(monkeypatch, json.dumps({"session_id": "s1", "hook_event_name": "SessionEnd"}))
+    _assert_silent_success(capsys)
+    assert stopped == [True]
+    assert running.state.snapshot()["sessions"] == {}
+
+
+def test_workflow_pre_tool_use_runs_bootstrap_then_forwards(running, monkeypatch, capsys):
+    from claude_workflow_viz.invoke import bootstrap as bootstrap_module
+
+    calls = []
+    monkeypatch.setattr(bootstrap_module, "run", lambda payload: calls.append(payload))
+    payload = {
+        "session_id": "s1",
+        "hook_event_name": "PreToolUse",
+        "tool_name": "Workflow",
+        "tool_input": {"name": "implement"},
+    }
+    _stdin(monkeypatch, json.dumps(payload))
+    _assert_silent_success(capsys)
+    assert calls == [payload]
+    events = running.state.snapshot()["sessions"]["s1"]["events"]
+    assert [event["kind"] for event in events] == ["run_start"]
+
+
+def test_other_events_forward_without_bootstrap_or_stop(monkeypatch, capsys):
+    from claude_workflow_viz.invoke import bootstrap as bootstrap_module
+
+    stopped = []
+    monkeypatch.setattr(Connection, "stop_server", lambda: stopped.append(True))
+
+    def explode(_payload):
+        raise AssertionError("bootstrap must not run for non-Workflow events")
+
+    monkeypatch.setattr(bootstrap_module, "run", explode)
+    _stdin(monkeypatch, json.dumps(SUBAGENT_START))
+    _assert_silent_success(capsys)
+    assert stopped == []

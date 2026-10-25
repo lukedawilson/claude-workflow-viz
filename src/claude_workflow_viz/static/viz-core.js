@@ -454,3 +454,26 @@ export function chooseSlice(availableSlices, chosenSlice) {
 export function graphRetryDelaySeconds(attempt) {
   return [2, 4, 8][attempt - 1] ?? 15;
 }
+
+/** Map session id -> workflow name, from run_start events in the snapshot then the live log. */
+export function sessionWorkflows(snapshot, log) {
+  const workflows = dictionary();
+  for (const [sessionId, session] of Object.entries(snapshot?.sessions ?? {})) {
+    for (const event of session.events ?? []) {
+      if (event.kind === "run_start" && event.workflow) {
+        workflows[sessionId] = event.workflow;
+      }
+    }
+  }
+  for (const event of log ?? []) {
+    if (event.kind === "run_start" && event.workflow) {
+      workflows[event.session_id] = event.workflow;
+    }
+  }
+  return workflows;
+}
+
+/** Distinct workflow names, sorted. */
+export function workflowNames(workflows) {
+  return [...new Set(Object.values(workflows))].sort();
+}

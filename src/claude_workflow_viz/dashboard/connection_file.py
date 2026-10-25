@@ -25,11 +25,14 @@ import hmac
 import json
 import os
 import secrets
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
 STATE_DIR_ENVIRONMENT_VARIABLE = "CLAUDE_WORKFLOW_VIZ_STATE_DIR"
 CONNECTION_FILE_NAME = "server.json"
+LOOPBACK_ADDRESS = "127.0.0.1"
+STOP_TIMEOUT_SECONDS = 1.0
 
 
 @dataclass(frozen=True)
@@ -56,10 +59,7 @@ class Connection:
     def write(self) -> Path:
         """Atomically write this connection to the connection file; returns its path."""
         path = _connection_file_path()
-        directory = path.parent
-        if not directory.exists():
-            directory.mkdir(mode=0o700, parents=True, exist_ok=True)
-            directory.chmod(0o700)
+        directory = ensure_state_directory()
         temporary = directory / f".{CONNECTION_FILE_NAME}.{os.getpid()}.{secrets.token_hex(4)}.tmp"
         descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         try:
@@ -70,6 +70,29 @@ class Connection:
             temporary.unlink(missing_ok=True)
             raise
         return path
+
+    @classmethod
+    def stop_server(cls) -> None:
+        """POST /shutdown to the running server; no-op without a connection file; never raises.
+
+        The SessionEnd branch must never fail (NFR2), so every failure is swallowed here:
+        a dead port, a non-2xx response, a timeout, or an unexpected exception.
+        """
+        connection = cls.read()
+        if connection is None:
+            return
+        request = urllib.request.Request(
+            f"http://{LOOPBACK_ADDRESS}:{connection.port}/shutdown",
+            headers={"Authorization": f"Bearer {connection.token}"},
+            method="POST",
+        )
+        # An empty ProxyHandler ignores HTTP_PROXY so the token only goes to the local server.
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        try:
+            with opener.open(request, timeout=STOP_TIMEOUT_SECONDS):
+                pass
+        except BaseException:
+            return
 
     @classmethod
     def remove_if_token_matches(cls, token: str) -> None:
@@ -94,7 +117,7 @@ def tokens_match(expected: str, provided: str | None) -> bool:
         return False
 
 
-def _state_directory() -> Path:
+def state_directory() -> Path:
     override = os.environ.get(STATE_DIR_ENVIRONMENT_VARIABLE)
     if override:
         return Path(override)
@@ -103,5 +126,22 @@ def _state_directory() -> Path:
     return base / "claude-workflow-viz"
 
 
+def ensure_state_directory() -> Path:
+    """Create the state directory with mode 0700 and return it; never raises.
+
+    Several writers may be the first to create the state dir (the bootstrap's cache write and
+    detached spawn, the debug-log helper), so they share this helper rather than each repeating
+    the mode. `mkdir(mode=0o700)` is enough for a new directory; the chmod tightens a directory
+    an earlier run left at a permissive mode.
+    """
+    directory = state_directory()
+    try:
+        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+        directory.chmod(0o700)
+    except OSError:
+        pass
+    return directory
+
+
 def _connection_file_path() -> Path:
-    return _state_directory() / CONNECTION_FILE_NAME
+    return state_directory() / CONNECTION_FILE_NAME

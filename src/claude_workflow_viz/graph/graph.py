@@ -496,6 +496,20 @@ def _reject_unknown(source: Mapping[str, Any], allowed: set[str], where: str) ->
     return None
 
 
+def safe_workflow_name(name: str) -> str:
+    """Return `name` only when it is a single safe filename component, else ''.
+
+    A workflow name keys `<state>/graphs/<name>.viz.yaml`, so it must not carry a path
+    separator or a `.`/`..` component (NFR1, R15). An unsafe name is treated as unknown:
+    the registry serves the linear fallback and no cache file is written.
+    """
+    if not name or name in (".", ".."):
+        return ""
+    if "/" in name or "\\" in name or "\x00" in name:
+        return ""
+    return name
+
+
 def _omit_unset(mapping: dict[str, Any]) -> dict[str, Any]:
     """Drop keys a human would not write: `None` values and a false `terminal` flag."""
     return {

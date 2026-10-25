@@ -37,20 +37,29 @@ Any other path answers 404. The Host check runs first, then the token check, bef
 is read.
 """
 
+import errno
 import json
 import queue
 import signal
+import sys
+import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import resources
 from urllib.parse import parse_qs, urlsplit
 
-from claude_workflow_viz.dashboard.connection_file import Connection, generate_token, tokens_match
-from claude_workflow_viz.graph.graph import Graph
+from claude_workflow_viz.dashboard.connection_file import (
+    LOOPBACK_ADDRESS,
+    Connection,
+    generate_token,
+    state_directory,
+    tokens_match,
+)
+from claude_workflow_viz.graph.graph import Graph, GraphError, safe_workflow_name
 from claude_workflow_viz.workflow.events import Event, EventError
 from claude_workflow_viz.workflow.run_state import RunState
 
-LOOPBACK_ADDRESS = "127.0.0.1"
+PREFERRED_PORT = 8322
 MAXIMUM_BODY_BYTES = 64 * 1024
 DEFAULT_KEEPALIVE_SECONDS = 15.0
 DEFAULT_REQUEST_TIMEOUT_SECONDS = 10.0
@@ -74,6 +83,7 @@ def _static_directory() -> resources.abc.Traversable:
 
 class VisualiserServer(ThreadingHTTPServer):
     daemon_threads = True
+    allow_reuse_address = sys.platform != "win32"
 
     def __init__(
         self,
@@ -91,6 +101,7 @@ class VisualiserServer(ThreadingHTTPServer):
             if entry.is_file() and any(entry.name.endswith(suffix) for suffix in _CONTENT_TYPES)
         )
         self.state = RunState()
+        self.workflow_graphs: dict[str, Graph] = {}
         self.token = token
         self.keepalive_seconds = keepalive_seconds
         self.request_timeout_seconds = request_timeout_seconds
@@ -99,17 +110,63 @@ class VisualiserServer(ThreadingHTTPServer):
     def port(self) -> int:
         return int(self.server_address[1])
 
+    def graph_for(self, workflow: str | None = None) -> tuple[Graph, str]:
+        """Return `(graph, source)` for a request: the registry entry, the default, or linear.
+
+        `workflow` names a per-workflow graph loaded on demand from
+        `<state>/graphs/<workflow>.viz.yaml` and cached in memory. An unknown name, or a file
+        that fails to load, degrades to a linear graph for that request (R15).
+        """
+        if workflow:
+            loaded = self._load_workflow_graph(workflow)
+            if loaded is not None:
+                return loaded, "config"
+            return self._linear_graph(), "linear"
+        if self.graph is not None:
+            return self.graph, "config"
+        return self._linear_graph(), "linear"
+
+    def _load_workflow_graph(self, name: str) -> Graph | None:
+        safe = safe_workflow_name(name)
+        if not safe:
+            return None
+        cached = self.workflow_graphs.get(safe)
+        if cached is not None:
+            return cached
+        loaded = Graph.load(state_directory() / "graphs" / f"{safe}.viz.yaml")
+        if isinstance(loaded, GraphError):
+            return None
+        self.workflow_graphs[safe] = loaded
+        return loaded
+
+    def _linear_graph(self) -> Graph:
+        seen = [
+            step["stage"] or key
+            for session in self.state.snapshot()["sessions"].values()
+            for key, step in session["steps"].items()
+        ]
+        return Graph.linear(seen)
+
 
 def start_server(
-    port: int = 0,
+    port: int = PREFERRED_PORT,
     keepalive_seconds: float = DEFAULT_KEEPALIVE_SECONDS,
     graph: Graph | None = None,
     request_timeout_seconds: float = DEFAULT_REQUEST_TIMEOUT_SECONDS,
 ) -> VisualiserServer:
-    """Bind, generate the token and write the connection file; the caller runs `serve_forever`."""
-    server = VisualiserServer(
-        port, generate_token(), keepalive_seconds, graph, request_timeout_seconds
-    )
+    """Bind, generate the token and write the connection file; the caller runs `serve_forever`.
+
+    The preferred port 8322 is tried first; when it is busy the server rebinds port 0 so the
+    OS picks a free one (a busy port degrades, never fails — NRB5). Any other explicit port
+    that is busy still fails fast.
+    """
+    token = generate_token()
+    try:
+        server = VisualiserServer(port, token, keepalive_seconds, graph, request_timeout_seconds)
+    except OSError as error:
+        if port != PREFERRED_PORT or error.errno != errno.EADDRINUSE:
+            raise
+        server = VisualiserServer(0, token, keepalive_seconds, graph, request_timeout_seconds)
     try:
         Connection(server.port, server.token).write()
     except BaseException:
@@ -118,12 +175,16 @@ def start_server(
     return server
 
 
-def serve(port: int, graph: Graph | None = None) -> None:
+def serve(port: int = PREFERRED_PORT, graph: Graph | None = None) -> None:
     """Run until interrupted (SIGINT or SIGTERM), close the socket, remove our connection file."""
     server = start_server(port, graph=graph)
     address = f"http://{LOOPBACK_ADDRESS}:{server.port}"
     print(f"claude-workflow-viz listening on {address}", flush=True)
-    print(f"open the UI at {address}/?token={server.token}", flush=True)
+    # The token URL is only meaningful to a human at a terminal. A detached bootstrap spawn
+    # redirects stdout to the state-dir debug log, so gating on the tty keeps the token out of
+    # that log (SECURITY-03: the token is never logged).
+    if sys.stdout is not None and sys.stdout.isatty():
+        print(f"open the UI at {address}/?token={server.token}", flush=True)
 
     def interrupt(signal_number: int, frame: object) -> None:
         raise KeyboardInterrupt
@@ -157,7 +218,11 @@ class _Handler(BaseHTTPRequestHandler):
         if not self._host_is_allowed():
             self._respond(HTTPStatus.MISDIRECTED_REQUEST)
             return
-        if urlsplit(self.path).path != "/ingest":
+        location = urlsplit(self.path).path
+        if location == "/shutdown":
+            self._shutdown()
+            return
+        if location != "/ingest":
             self._respond(HTTPStatus.NOT_FOUND)
             return
         authorisation = self.headers.get("Authorization", "")
@@ -183,6 +248,34 @@ class _Handler(BaseHTTPRequestHandler):
         self.server.state.apply(event)
         self._respond(HTTPStatus.NO_CONTENT)
 
+    def _shutdown(self) -> None:
+        """Authenticated stop: deny on a bad or missing token, 204 and stop on success.
+
+        Only a request carrying the server's own token stops it. `shutdown()` waits for the
+        `serve_forever` loop (running on another thread) to finish, so it never deadlocks a
+        handler thread. The connection file is removed with the same sequence as SIGINT.
+        """
+        authorisation = self.headers.get("Authorization", "")
+        provided = (
+            authorisation[len(_BEARER_PREFIX) :]
+            if authorisation.startswith(_BEARER_PREFIX)
+            else None
+        )
+        if not tokens_match(self.server.token, provided):
+            self._respond(HTTPStatus.UNAUTHORIZED)
+            return
+        port, token = self.server.port, self.server.token
+        self._respond(HTTPStatus.NO_CONTENT)
+        # `server_close()` joins this server's request threads, so it must not run on the
+        # handler thread itself (a self-join). A short-lived thread owns the stop instead.
+        threading.Thread(target=self._stop_and_cleanup, args=(port, token), daemon=True).start()
+
+    def _stop_and_cleanup(self, port: int, token: str) -> None:
+        """Stop `serve_forever`, close the socket, remove our connection file (SIGINT sequence)."""
+        self.server.shutdown()
+        self.server.server_close()
+        Connection(port, token).remove_if_token_matches(token)
+
     def do_GET(self) -> None:
         if not self._host_is_allowed():
             self._respond(HTTPStatus.MISDIRECTED_REQUEST)
@@ -199,23 +292,17 @@ class _Handler(BaseHTTPRequestHandler):
             elif location.path == "/stream":
                 self._stream()
             else:
-                self._graph()
+                workflow = parse_qs(location.query).get("workflow", [None])[0]
+                self._graph(workflow)
         else:
             self._respond(HTTPStatus.NOT_FOUND)
 
-    def _graph(self) -> None:
-        graph = self.server.graph
-        if graph is None:
-            seen = [
-                step["stage"] or key
-                for session in self.server.state.snapshot()["sessions"].values()
-                for key, step in session["steps"].items()
-            ]
-            graph = Graph.linear(seen)
+    def _graph(self, workflow: str | None = None) -> None:
+        graph, source = self.server.graph_for(workflow)
         rules = json.loads(_static_directory().joinpath(_STATUS_RULES_NAME).read_text("utf-8"))
         document = {
             "graph": graph.to_dict(),
-            "source": "config" if self.server.graph is not None else "linear",
+            "source": source,
             "status_rules": rules,
         }
         self._send(HTTPStatus.OK, json.dumps(document).encode("utf-8"), _CONTENT_TYPES[".json"])

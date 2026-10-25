@@ -30,6 +30,8 @@ import {
   nodeStatus,
   parseStepIdentity,
   runStatus,
+  sessionWorkflows,
+  workflowNames,
 } from "../../src/claude_workflow_viz/static/viz-core.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -546,4 +548,40 @@ test("unmappedSteps lists steps with no node, in arrival order, with their statu
 
 test("unmappedSteps is empty when every step maps to a node", () => {
   assert.deepEqual(unmappedSteps(replay([event({ step_key: "planner", agent_id: "a1" })]), rules), []);
+});
+
+test("sessionWorkflows maps each session to its run_start workflow", () => {
+  const snapshot = {
+    sessions: {
+      a: { steps: {}, runs: {}, events: [{ kind: "run_start", workflow: "implement" }] },
+      b: { steps: {}, runs: {}, events: [{ kind: "run_start", workflow: "rca" }] },
+      c: { steps: {}, runs: {}, events: [] },
+    },
+  };
+  const workflows = sessionWorkflows(snapshot, []);
+  assert.deepEqual({ ...workflows }, { a: "implement", b: "rca" });
+});
+
+test("sessionWorkflows prefers a later live log run_start", () => {
+  const snapshot = {
+    sessions: {
+      a: { steps: {}, runs: {}, events: [{ kind: "run_start", workflow: "implement" }] },
+    },
+  };
+  const log = [{ session_id: "a", kind: "run_start", workflow: "rca" }];
+  const workflows = sessionWorkflows(snapshot, log);
+  assert.deepEqual({ ...workflows }, { a: "rca" });
+});
+
+test("sessionWorkflows ignores run_start events without a workflow", () => {
+  const snapshot = {
+    sessions: {
+      a: { steps: {}, runs: {}, events: [{ kind: "run_start" }] },
+    },
+  };
+  assert.deepEqual({ ...sessionWorkflows(snapshot, []) }, {});
+});
+
+test("workflowNames lists distinct names sorted", () => {
+  assert.deepEqual(workflowNames({ a: "rca", b: "implement", c: "rca" }), ["implement", "rca"]);
 });

@@ -53,8 +53,9 @@ def test_serve_with_missing_graph_file_exits_non_zero(tmp_path, monkeypatch, cap
     assert not (tmp_path / "server.json").exists()
 
 
-def test_serve_prints_ui_url_with_token_and_exposes_graph(tmp_path, monkeypatch, capsys):
+def test_serve_prints_ui_url_with_token_and_exposes_graph(tmp_path, monkeypatch):
     import http.client
+    import io
     import json
     import re
     import threading
@@ -65,12 +66,19 @@ def test_serve_prints_ui_url_with_token_and_exposes_graph(tmp_path, monkeypatch,
 
     _clean_environment(tmp_path, monkeypatch)
     example = Path(__file__).parent.parent / "examples" / "implement.viz.yaml"
+
+    class Terminal(io.StringIO):
+        def isatty(self):
+            return True
+
+    stdout = Terminal()
+    monkeypatch.setattr(server_module.sys, "stdout", stdout)
     result = []
     original = server_module.VisualiserServer.serve_forever
 
     def stop_after_probe(self, *args, **kwargs):
         def probe():
-            result.append(capsys.readouterr().out)
+            result.append(stdout.getvalue())
             connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
             connection.request("GET", f"/graph?token={self.token}")
             result.append(json.loads(connection.getresponse().read())["source"])

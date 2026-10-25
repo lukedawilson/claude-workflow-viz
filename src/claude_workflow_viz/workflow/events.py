@@ -84,6 +84,7 @@ class Event:
     stage: str = ""
     round: int | None = None
     phase: str = ""
+    workflow: str = ""
     result: Any = None
 
     @classmethod
@@ -129,6 +130,9 @@ class Event:
         phase = _optional_string(data, "phase")
         if isinstance(phase, EventError):
             return phase
+        workflow = _optional_string(data, "workflow")
+        if isinstance(workflow, EventError):
+            return workflow
         result = _bounded_result(data.get("result"))
         if isinstance(result, EventError):
             return result
@@ -145,6 +149,7 @@ class Event:
             stage=stage,
             round=round_,
             phase=phase,
+            workflow=workflow,
             result=result,
         )
 
@@ -165,6 +170,7 @@ class Event:
             "stage": self.stage,
             "round": self.round,
             "phase": self.phase,
+            "workflow": self.workflow,
             "result": self.result,
         }
         data.update({key: value for key, value in optional.items() if value not in ("", None)})

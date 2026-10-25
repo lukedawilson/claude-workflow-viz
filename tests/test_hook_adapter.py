@@ -793,3 +793,29 @@ def test_workflow_agent_without_alphanumeric_id_uses_the_fallback_key(
     event = normalise(_workflow_payload(workflow_tree, agent_id, event_name), _clock)
     assert event is not None
     assert event.step_key == FALLBACK_STEP_KEY
+
+
+def test_pre_tool_use_workflow_carries_the_workflow_name() -> None:
+    payload = _common("PreToolUse") | {"tool_name": "Workflow", "tool_input": {"name": "implement"}}
+
+    event = normalise(payload, _clock)
+
+    assert event is not None
+    assert event.workflow == "implement"
+
+
+def test_pre_tool_use_workflow_without_a_name_leaves_workflow_empty() -> None:
+    payload = _common("PreToolUse") | {"tool_name": "Workflow", "tool_input": {}}
+
+    event = normalise(payload, _clock)
+
+    assert event is not None
+    assert event.workflow == ""
+
+
+def test_step_events_do_not_carry_a_workflow() -> None:
+    start = normalise(_subagent_stop(), _clock)
+
+    assert start is not None
+    assert start.workflow == ""
+    assert "workflow" not in start.to_dict()

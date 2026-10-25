@@ -289,3 +289,29 @@ def test_moderately_nested_result_is_kept() -> None:
 
     assert isinstance(event, Event)
     assert event.result == nested
+
+
+def test_workflow_field_round_trips_and_is_optional() -> None:
+    with_workflow = _valid_data() | {"workflow": "implement"}
+
+    event = Event.from_dict(with_workflow)
+
+    assert isinstance(event, Event)
+    assert event.workflow == "implement"
+    assert "workflow" in event.to_dict()
+    assert Event.from_dict(event.to_dict()) == event
+
+
+def test_workflow_field_omitted_when_unset() -> None:
+    event = Event.from_dict(_valid_data())
+
+    assert isinstance(event, Event)
+    assert event.workflow == ""
+    assert "workflow" not in event.to_dict()
+
+
+def test_workflow_field_must_be_a_string() -> None:
+    error = _error(_valid_data() | {"workflow": 5})
+
+    assert error.code == EventErrorCode.NOT_STRING
+    assert "workflow" in error.message
