@@ -1073,3 +1073,17 @@ Q5 - A"
 **User Input**: "Terminal (Done) does NOT go green! It stays grey and then the process ends after 8s" / "I was running run-demo.sh - it doesn't work in run-demo. I haven't tested a live run"
 **AI Response**: Root cause: the demo fixture posts to /ingest directly, bypassing hook_adapter.normalise; three events lacked required fields (run_start missing step_key+status, the two done events missing summary) so Event.from_dict returned 400 and the server dropped them. TDD fix: new tests/test_demo_fixture.py locks every fixture event to the ingest contract (red confirmed), fixture gained step_key "workflow" + status "running" on run_start and summaries on the done events (green). Verified: Node 100/100 pass, pytest touched files 21/21, DEMO_HOLD_SECONDS=0 ./run-demo.sh exits 0 with shutdown 204. Committed 0da4804 and pushed.
 **Context**: Construction - Build and Test - demo terminal-green bug closed
+
+## Build and Test Stage
+**Timestamp**: 2026-10-25T18:20:00Z
+**Build Status**: Success
+**Test Status**: Pass
+**Files Generated**:
+- build-instructions.md
+- unit-test-instructions.md
+- integration-test-instructions.md
+- performance-test-instructions.md
+- security-test-instructions.md
+- e2e-test-instructions.md
+- build-and-test-summary.md
+**Context**: CI run 40217946252 green on both platforms (ubuntu 597 Python + 103 Node; windows 595+2skipped Python + 103 Node). Local: 597 Python, 100 Node, ruff clean, PBT-08 seed 42 twice identical + seed 7, 23 passed. Windows leg fixed via tests/_platform.py, /shutdown-based stops on win32, .gitattributes mermaid -text; product code unchanged.

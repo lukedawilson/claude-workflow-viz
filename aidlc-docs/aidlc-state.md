@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-24T20:20:00Z
-- **Current Stage**: CONSTRUCTION - Build and Test (global gate)
+- **Current Stage**: OPERATIONS (placeholder; Build and Test approved awaiting user confirmation)
 
 ## Execution Plan Summary
 - **Total Stages**: 9 to execute (Application Design, Units Generation, Functional Design,
@@ -74,7 +74,7 @@ Plan artifacts: aidlc-docs/inception/application-design/{unit-of-work,unit-of-wo
 - [x] Unit D: skipped-stage visualisation (FR9) — Infrastructure Design (SKIP - desktop pipx tool)
 - [ ] Unit D: skipped-stage visualisation (FR9) — Code Generation
 
-- [ ] Build and Test (global final step; per-unit Build and Test deferred to this gate per user instruction 2026-10-25T13:40:00Z)
+- [x] Build and Test (global final step; per-unit Build and Test deferred to this gate per user instruction 2026-10-25T13:40:00Z) — gate run green, awaiting user approval
 
 Notes: Infrastructure Design is SKIP project-wide, so every unit's Infrastructure Design line is
 marked [x] (SKIP). A unit is complete when its remaining four construction stages are [x].
