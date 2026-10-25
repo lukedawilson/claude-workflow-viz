@@ -739,3 +739,15 @@ Q5 - A"
 **User Input**: "Q1. A approved with one addition: the scope includes a run-demo.sh that does an end-to end test (statically parses a fictional claude workflow, spins up the server and opens the viz in browser, and simulates the update hooks) / Q2. B - I'll do it"
 **AI Response**: Plan approved with the run-demo.sh addition recorded as Step 13 (end-to-end demo: parse fixture workflow, sweep + spawn server, open dashboard, simulate hook payloads to /ingest and /shutdown). Execution vehicle B: agentic-dev-loop, user-triggered. Updated aidlc-state.md Current Stage line to name the unit as its directory for the loader autodetect contract.
 **Context**: Construction - Unit B - Code Generation Part 1 approved; awaiting the user's dev-loop run
+
+## run-demo.sh interpreter hotfix
+**Timestamp**: 2026-10-25T15:55:00Z
+**User Input**: "A" (inline patch; prior message: "% ./run-demo.sh ... SyntaxError: expected '(' ... WHAT THE ACTUAL FUCKING FUCK!?!?!?!?!?!?!?!")
+**AI Response**: Diagnosed: not a code bug — run-demo.sh defaulted to ${PYTHON:-python}; /opt/homebrew/bin/python is 3.11.13, and the dev-loop's events.py uses PEP 695 generics (3.12+; package floor is >=3.12; venv is 3.12.13 and imports fine). Patched run-demo.sh: PYTHON now defaults to $HERE/.venv/bin/python with a loud >=3.12 version gate failing fast (AGENTS.md error-handling rule). Verified end-to-end: staging → bootstrap parse+spawn → dashboard URL with token+workflow → /shutdown 204 → exit 0.
+**Context**: Unit B dev-loop deliverable hotfix, inline per user choice
+
+## run-demo.sh demo extension
+**Timestamp**: 2026-10-25T16:10:00Z
+**User Input**: "A" (option A of the demo-extension choice: full implement progression + env-configurable hold before shutdown)
+**AI Response**: Rewrote run-demo.sh's simulation: posts the full implement progression (pre-flight → planner → gate-baseline → s1/develop:r1 → s1/gate:r1 fail → s1/develop:r2 retry → s1/gate:r2 pass → review APPROVED → code-review → classify → verify-fsm PASS), prints the dashboard URL before the simulation, holds DEMO_HOLD_SECONDS (default 8, 0 skips) before POST /shutdown. Verified: DEMO_HOLD_SECONDS=1 run → 22 events ingested, shutdown 204, exit 0.
+**Context**: Construction - Unit B - demo script improvement, user-approved inline

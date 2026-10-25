@@ -66,13 +66,15 @@ claude-workflow-viz --help
 
 ```sh
 claude-workflow-viz serve
-# claude-workflow-viz listening on http://127.0.0.1:54321
-# open the UI at http://127.0.0.1:54321/?token=<random-token>
+# claude-workflow-viz listening on http://127.0.0.1:8322
+# open the UI at http://127.0.0.1:8322/?token=<random-token>
 ```
 
-`--port 0`, the default, lets the OS pick a free port; the actual port is printed on start.
-Open the printed URL — the page reads the token from the query string and uses it for
-`/graph` and `/stream`. Ctrl-C shuts the server down and removes the connection file.
+`serve` prefers port 8322; when that port is busy it falls back to an OS-picked free port.
+`--port 0` forces an OS-picked port. The actual bound port is printed on start and written
+to the connection file. Open the printed URL — the page reads the token from the query
+string and uses it for `/graph` and `/stream`. Ctrl-C shuts the server down and removes
+the connection file.
 
 `hook` finds `serve` through the connection file, so the two sides never share a config file:
 
@@ -131,14 +133,35 @@ payload from stdin, forwards it, and exits 0 no matter what.
 5. **Routes fire.** Pass and fail edges highlight, retries re-open nodes, and
    exhausting `max_rounds` routes to the `on_rounds_exhausted` terminal.
 
+### Invoke-time bootstrap
+
+When a workflow starts, the Workflow `PreToolUse` hook bootstraps the visualiser.
+No manual `serve` step is needed:
+
+1. The hook reads the connection file and probes `GET /graph` to see whether a server is
+   already running. A live server is reused unchanged.
+2. The hook statically parses the invoked workflow's JavaScript
+   (`<repo>/.claude/workflows/<name>.js`) into the graph contract and writes
+   `<state>/graphs/<name>.viz.yaml`. Other workflows' caches are left untouched.
+3. If no server is live, the hook spawns `serve` detached on the preferred port 8322,
+   falling back to a free port when busy. The server's output goes to the state-dir debug log,
+   never the hook's stream.
+4. The hook waits at most 10 seconds for the connection file, then opens the dashboard at
+   `/?token=<token>&workflow=<name>` in the default browser.
+
+If the workflow cannot be parsed, no cache is written and the server starts in linear mode;
+the dashboard shows the unmapped-step warning, and the state-dir debug log carries the
+parser's failure summary. `SessionEnd` stops the server by posting `/shutdown`.
+
 ### Server endpoints
 
 | Endpoint | Auth | Behaviour |
 | --- | --- | --- |
 | `POST /ingest` | `Authorization: Bearer <token>` | One JSON event, at most 64 KiB. 204 applied, 400 bad JSON or invalid event, 401 missing or wrong token, 413 body too large. |
+| `POST /shutdown` | `Authorization: Bearer <token>` | Stops the server and removes its connection file (the same sequence as Ctrl-C). 401 on a missing or wrong token, 204 on success. |
 | `GET /` | none (the page itself holds no run data) | The web UI HTML. Open it as `/?token=<token>`; the page reads the token from the URL and uses it for `/graph` and `/stream`. |
 | `GET /static/<file>` | none | A file from the package's `static` directory (`app.js`, `viz-core.js`, `styles.css`, `mermaid.min.js`, `status_rules.json`, ...). Only existing `.html`, `.js`, `.css` and `.json` files are served; anything else, including `VENDORED.md` and `mermaid.LICENSE`, is 404. |
-| `GET /graph?token=<token>` | `token` query parameter | JSON `{"graph", "source", "status_rules"}`. `source` is `config` when `serve --graph` supplied the graph, else `linear`. 401 on a missing or wrong token. |
+| `GET /graph?token=<token>[&workflow=<name>]` | `token` query parameter | JSON `{"graph", "source", "status_rules"}`. `source` is `config` when a graph was supplied (`serve --graph` or the per-workflow registry), else `linear`. `workflow=<name>` serves that workflow's graph from `<state>/graphs/<name>.viz.yaml`; an unknown name falls back to linear. 401 on a missing or wrong token. |
 | `GET /stream?token=<token>` | `token` query parameter (a browser `EventSource` cannot set headers) | `text/event-stream`. First a `snapshot` event with the current run state, then one `event` per applied event, with a `: keep-alive` comment every 15 seconds. 401 on a missing or wrong token. |
 
 Every endpoint accepts only a `Host` header of `127.0.0.1:<port>` or `localhost:<port>` (the
