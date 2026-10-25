@@ -219,5 +219,21 @@
       "touchesConcurrency": false
     },
     "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 22.5,
+    "kind": "step_start",
+    "step_key": "done",
+    "status": "running",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 23.0,
+    "kind": "step_stop",
+    "step_key": "done",
+    "status": "pass",
+    "run_id": "demo"
   }
 ]

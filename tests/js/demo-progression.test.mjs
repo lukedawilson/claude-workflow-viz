@@ -8,6 +8,7 @@ import {
   initialState,
   applyEvent,
   bannerStatus,
+  mermaidIds,
   viewClasses,
 } from "../../src/claude_workflow_viz/static/viz-core.js";
 
@@ -48,4 +49,17 @@ test("the demo progression marks the gated verify-fsm stage as skipped", () => {
     view.skipped.has("verify-fsm"),
     `expected verify-fsm to be skipped, got: ${[...view.skipped].join(", ") || "(none)"}`,
   );
+});
+
+test("a terminal node goes green when the run hits it", () => {
+  let state = initialState(
+    { sessions: { demo: { steps: {}, runs: {}, events: [] } } },
+    "demo",
+    graph,
+  );
+  for (const event of progression) {
+    state = applyEvent(state, event, graph, rules);
+  }
+  const view = viewClasses(state, graph, rules, "s1");
+  assert.equal(view.nodes[mermaidIds(graph).get("done")], "status-pass");
 });

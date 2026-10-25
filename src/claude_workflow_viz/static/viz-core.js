@@ -41,7 +41,9 @@ function compilePattern(pattern) {
 }
 
 function nodeFor(graph, key) {
-  const node = graph.nodes.find((item) => item.stage === key || item.step_key === key);
+  const node = graph.nodes.find(
+    (item) => item.stage === key || item.step_key === key || item.id === key,
+  );
   return node ? node.id : null;
 }
 

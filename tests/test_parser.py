@@ -325,7 +325,6 @@ def test_parser_output_matches_checked_in_demo_graph_fixture():
     """The Node demo-progression test replays events against
     tests/fixtures/implement-graph.json; keep it in lockstep with the parser."""
     import json
-
     from pathlib import Path
 
     fixture = Path(__file__).parent / "fixtures" / "implement-graph.json"
