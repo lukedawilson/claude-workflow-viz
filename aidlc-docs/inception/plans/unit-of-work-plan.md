@@ -237,3 +237,35 @@ X) Other (please describe after [Answer]: tag below)
 Unit C otherwise imports nothing from A or B (deployment only). Sequence for the
 construction phase: Unit A, then Unit B, then Unit C.
 (Derived from UE answers; recorded 2026-10-25T02:10:00Z.)
+
+---
+
+## Amendment 2026-10-25: vertical-slice unit decomposition (recorded rule)
+
+**User directive (verbatim):** "Ok, add to AGENTS.md (or wherever you think best) that
+each unit must ship a usable change - vertical slice unit decomposition / This doesn't
+contradict DDD bounded contexts, becase you don't need to build everything within a
+boundary all at once"
+
+**Rule text (drafted for AGENTS.md, Development workflow section):**
+
+> ## Unit decomposition — vertical slices
+>
+> Each construction unit must ship a usable, visible change on its own —
+> a vertical slice of product capability, not a horizontal layer.
+> A unit that lands only internal plumbing with no observable difference
+> for a user of the product does not satisfy this rule.
+>
+> This does not conflict with DDD bounded contexts. A unit may deliver
+> only part of a bounded context, leaving the rest of that context to
+> later units: boundaries decide where code lives; units decide the
+> order it lands in.
+
+**Second user directive (verbatim):** "Don't change the existing units, we're stuck
+with them for nowe"
+
+**Effect:** the rule applies prospectively to future decompositions. Units A–D stand
+as planned (Unit A is acknowledged to ship no visible change; accepted at
+decomposition time). AGENTS.md is outside the planner's writable scope, so the rule
+is recorded here as the AI-DLC record and handed to the user for application to
+AGENTS.md (or via a later dev-loop run).

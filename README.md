@@ -218,6 +218,27 @@ nodes:
 Every validation failure returns a typed error code (`GraphError`) naming the node and field —
 never a stack trace.
 
+### Static parse subset
+
+At invoke time the visualiser statically parses the invoked workflow's JavaScript into the same `.viz.yaml` schema above.
+The parser code is the authoritative subset definition.
+Anything outside the subset is a named failure — never a guessed graph — and degrades to a hand-authored fallback.
+
+| Construct | Parsed as |
+| --- | --- |
+| `export const meta = { name }` | graph `name` |
+| `const MAX_ROUNDS = <int>` | `max_rounds`; `if (round >= MAX_ROUNDS) return X` → `on_rounds_exhausted` |
+| `agent(...)` with a string-literal label | a `step_key` node matched on the whole label |
+| `agent(...)` with a `${slice}/<stage>:r${round}` template label | a `stage` node matched on the literal stage |
+| `while`/`for` with `continue` back to an earlier agent | a loop-back `on_fail` edge to the re-entered node |
+| early `return DONE` / `BLOCKED` / `NEEDS_CONTEXT` | terminal nodes `done` / `blocked` / `needs-context` |
+| an `if`-guarded agent with no agent in the `else` | a normal node (the guard is not encoded) |
+| `Promise.all` of `agent(...)` calls | one node per member |
+
+Each construct outside the subset produces one typed `ParseFailure`, collected exhaustively in one pass.
+The codes are `unsupported-label`, `missing-max-rounds`, `unsupported-control-flow`, `unsupported-terminal`, `unsupported-conditional`, and `unsupported-parallel`, plus `missing-meta` and `no-agent-calls`.
+A report, not a partial graph, is the result whenever any failure is found.
+
 ## Development environment
 
 ```sh

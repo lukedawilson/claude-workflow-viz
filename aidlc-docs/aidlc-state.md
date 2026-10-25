@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-24T20:20:00Z
-- **Current Stage**: CONSTRUCTION - Unit unit-a-graph-source - Code Generation (Part 1 approved; dev loop run pending)
+- **Current Stage**: CONSTRUCTION - Unit unit-b-hook-path - Code Generation (Part 1 approved; dev loop run pending)
 
 ## Execution Plan Summary
 - **Total Stages**: 9 to execute (Application Design, Units Generation, Functional Design,
@@ -48,13 +48,36 @@ Decided during Requirements Analysis (2026-10-24, user opt-in):
 - [x] Application Design (approved 2026-10-25T01:40:00Z)
 - [x] Units Generation (approved 2026-10-25T02:25:00Z)
 
-### CONSTRUCTION PHASE
-- [ ] Functional Design - EXECUTE
-- [x] NFR Requirements - EXECUTE (approved 2026-10-25T03:25:00Z)
-- [x] NFR Design - EXECUTE (approved 2026-10-25T03:40:00Z)
-- [ ] Infrastructure Design - SKIP
-- [ ] Code Generation (per unit)
-- [ ] Build and Test
+### 🟢 CONSTRUCTION PHASE
+
+Construction order: A → B → C → D (B uses A's parser + to_yaml; C's verify runs B's dispatcher).
+Plan artifacts: aidlc-docs/inception/application-design/{unit-of-work,unit-of-work-dependency,unit-of-work-story-map}.md
+
+- [x] Unit A: graph source — Functional Design (approved 2026-10-25T03:06:00Z)
+- [x] Unit A: graph source — NFR Requirements (approved 2026-10-25T03:25:00Z)
+- [x] Unit A: graph source — NFR Design (approved 2026-10-25T03:40:00Z)
+- [x] Unit A: graph source — Infrastructure Design (SKIP - desktop pipx tool, no cloud infra)
+- [x] Unit A: graph source — Code Generation (approved 2026-10-25T13:40:00Z; dev-loop commits: construct unit-a-graph-source + Docs; suite 509 passed / 1 skipped)
+- [x] Unit B: hook path / server lifecycle — Functional Design (approved 2026-10-25T14:26:00Z)
+- [x] Unit B: hook path / server lifecycle — NFR Requirements (approved 2026-10-25T14:50:00Z)
+- [x] Unit B: hook path / server lifecycle — NFR Design (approved 2026-10-25T15:26:00Z)
+- [x] Unit B: hook path / server lifecycle — Infrastructure Design (SKIP - desktop pipx tool)
+- [ ] Unit B: hook path / server lifecycle — Code Generation
+- [ ] Unit C: install — Functional Design
+- [ ] Unit C: install — NFR Requirements
+- [ ] Unit C: install — NFR Design
+- [x] Unit C: install — Infrastructure Design (SKIP - desktop pipx tool)
+- [ ] Unit C: install — Code Generation
+- [ ] Unit D: skipped-stage visualisation (FR9) — Functional Design
+- [ ] Unit D: skipped-stage visualisation (FR9) — NFR Requirements
+- [ ] Unit D: skipped-stage visualisation (FR9) — NFR Design
+- [x] Unit D: skipped-stage visualisation (FR9) — Infrastructure Design (SKIP - desktop pipx tool)
+- [ ] Unit D: skipped-stage visualisation (FR9) — Code Generation
+
+- [ ] Build and Test (global final step; per-unit Build and Test deferred to this gate per user instruction 2026-10-25T13:40:00Z)
+
+Notes: Infrastructure Design is SKIP project-wide, so every unit's Infrastructure Design line is
+marked [x] (SKIP). A unit is complete when its remaining four construction stages are [x].
 
 ### OPERATIONS PHASE
 - [ ] Operations (placeholder)

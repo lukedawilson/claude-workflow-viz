@@ -53,9 +53,9 @@ the /viz agent fixes everything in one round).
   (e.g. `if (round >= MAX_ROUNDS) return BLOCKED`) → `on_rounds_exhausted: blocked`
   (FD7). MAX_ROUNDS without an exhaustion return, or a loop exhaustion without
   MAX_ROUNDS, is a failure (MissingMaxRounds / UnsupportedTerminal).
-- `Promise.all([...])` of statically known agent calls → the members become parallel
-  nodes (each chaining to the same successor). A member that is not a statically known
-  agent call is `UnsupportedParallel`.
+- `Promise.all([...])` of statically known agent calls → the members become regular nodes,
+  linearised into a source-order chain because the graph schema has no fork/join concept.
+  A member that is not a statically known agent call is `UnsupportedParallel`.
 
 ## Terminal set
 

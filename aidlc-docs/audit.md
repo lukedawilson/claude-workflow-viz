@@ -525,3 +525,217 @@ Q5 - A"
 **User Input**: (none - automatic)
 **AI Response**: (1) Renamed the code-gen plan to unit-a-graph-source-a-code-generation-plan.md so it matches the engine's aidlc loader glob {slug}-*-code-generation-plan.md (the AI-DLC rule filename has no middle segment and would not load). (2) Fixed aidlc-state.md Current Stage line to name the unit as its directory name (Unit unit-a-graph-source) per the loader's autodetect contract. (3) Pre-staged the three workflow fixtures into tests/fixtures/workflows/ (implement.js, rca.js, cross-repo-check.js from workflow-examples) + provenance README, because the dev-loop sandbox mounts only this workspace and cannot reach the workflow repo. (4) Code Generation Part 1 (planning) marked complete.
 **Context**: Construction - Unit A - awaiting the user's dev-loop run
+
+## State File Maintenance
+**Timestamp**: 2026-10-25T13:05:00Z
+**User Input**: "Yes. These units aren't verticals, so I assume the product is useless/broken untill all of them ship?"
+**AI Response**: Rewrote the aidlc-state.md CONSTRUCTION PHASE section to track per-unit progress (each unit's Functional Design / NFR Requirements / NFR Design / Infrastructure Design / Code Generation lines, Infrastructure Design marked SKIP project-wide, Build and Test tracked globally). Answered the verticals question: the product already works today via the existing hand-authored-yaml path; units are additive and the suite stays green at every ship boundary; the new capability is visible end-to-end only after A+B+C.
+**Context**: Construction - bookkeeping
+
+## Units Generation - Amendment
+**Timestamp**: 2026-10-25T13:10:00Z
+**User Input**: "Ok, add to AGENTS.md (or wherever you think best) that each unit must ship a usable change - vertical slice unit decomposition / This doesn't contradict DDD bounded contexts, becase you don't need to build everything within a boundary all at once"
+**AI Response**: Recorded the vertical-slice unit decomposition rule as an amendment in aidlc-docs/inception/plans/unit-of-work-plan.md with the drafted AGENTS.md text (AGENTS.md is read-only in planner mode; handed to the user for application). No unit changes.
+**Context**: Units Generation - amendment after completion
+---
+
+## Units Generation - Amendment 2
+**Timestamp**: 2026-10-25T13:11:00Z
+**User Input**: "Don't change the existing units, we're stuck with them for nowe"
+**AI Response**: Confirmed: Units A-D stand as planned; the vertical-slice rule applies prospectively only. No re-decomposition.
+**Context**: Units Generation - amendment after completion
+
+## AGENTS.md - Vertical-slice rule applied
+**Timestamp**: 2026-10-25T13:15:00Z
+**User Input**: "Apply to AGENTS.md now"
+**AI Response**: Applied the vertical-slice unit decomposition rule to AGENTS.md under "## Development workflow" (new section "## Unit decomposition — vertical slices" above the TDD rules).
+**Context**: Repo convention - applied per user instruction
+
+## Code Generation (Unit A) - Approval
+**Timestamp**: 2026-10-25T13:40:00Z
+**User Input**: "unit A done / Continue to unit b"
+**AI Response**: Unit A Code Generation approved. Dev-loop commits verified: fa6273c "feat: construct unit unit-a-graph-source (agent dev loop)" (parser.py 586 ln, parse_failures.py 245 ln, graph.py to_yaml() +44, 4 test modules, pyproject += graph_source) and c4f66d3 "Docs" (README static-parse-subset table, aidlc-docs state/audit updates, AGENTS.md vertical-slice rule committed). Suite verified green: 509 passed, 1 skipped. Per user instruction, per-unit Build and Test is deferred to the global Build and Test step after all units; proceeding to Unit B (hook path / server lifecycle) Functional Design.
+**Context**: Construction - Unit A Code Generation approved; Unit B begins
+
+## Functional Design (Unit B) - Plan
+**Timestamp**: 2026-10-25T13:45:00Z
+**User Input**: (none - automatic stage progression after "unit A done / Continue to unit b")
+**AI Response**: Started Unit B (hook path / server lifecycle) Functional Design. Loaded functional-design.md rule + Domain Standards exposition requirements. Created aidlc-docs/construction/plans/unit-b-hook-path-functional-design-plan.md with Phase 1 exposition questions UEB1-UEB6 (each citing its source requirement per DOMAIN-01: FR6/Q6 liveness ownership, FR3/FR6 cache-yaml ownership, NFR2/FR6 process split, UE2/Q6-B /shutdown change-togetherness, NFR2 failure-mode surfacing, Q2b browser-open actor) and Phase 2 design questions UB1-UB4 (shutdown.py fold, SessionEnd no-server case, bounded-wait duration, async-race confirmation). Questions will be asked one-by-one in chat.
+**Context**: Construction - Unit B - Functional Design
+
+## Functional Design (Unit B) - UEB1
+**Timestamp**: 2026-10-25T13:48:00Z
+**User Input**: "A"
+**AI Response**: UEB1 answered A — the connection file is the machine's single liveness record (server.json presence + token-authenticated probe); no PID file or lockfile. Answer written back to the plan. Presented UEB2.
+**Context**: Construction - Unit B - Functional Design - Domain Exposition
+
+## Functional Design (Unit B) - UEB2
+**Timestamp**: 2026-10-25T13:52:00Z
+**User Input**: "Recommendation?" then "A"
+**AI Response**: Recommended A (Bootstrap owns the transient cache yaml: single writer, read-once at spawn, overwritten each invocation; the server only consumes it and serves linear mode without one). UEB2 answered A. Answer written back to the plan. Presented UEB3.
+**Context**: Construction - Unit B - Functional Design - Domain Exposition
+
+## Functional Design (Unit B) - UEB3
+**Timestamp**: 2026-10-25T13:54:00Z
+**User Input**: "A"
+**AI Response**: UEB3 answered A — detached spawn, server stdout/stderr to a state-dir log file only, never the hook's streams; hook waits bounded for the connection file then exits. Answer written back to the plan. Presented UEB4.
+**Context**: Construction - Unit B - Functional Design - Domain Exposition
+
+## Functional Design (Unit B) - UEB4
+**Timestamp**: 2026-10-25T13:58:00Z
+**User Input**: "B - is there a downside?" then "B"
+**AI Response**: Answered the downside question: no material downside — Connection.stop_server() remains the intent (connection-file context intact); POST /shutdown is transport mechanics sharing the server's conventions (Bearer/Host allowlist/401-204 style); the partial change-togetherness caveat applies to every endpoint. UEB4 answered B. Answer written back to the plan. Presented UEB5.
+**Context**: Construction - Unit B - Functional Design - Domain Exposition
+
+## Functional Design (Unit B) - UEB5
+**Timestamp**: 2026-10-25T14:02:00Z
+**User Input**: "B" then "A"
+**AI Response**: UEB5 answered B initially; flagged the contradiction with the established constraint that async hook output is never shown to the user (Q2b - the reason auto-open was chosen); asked a clarification question (channel options). User revised to A: silent everywhere on the hook path; degradation shows only in the dashboard or not at all; the state-dir debug log remains the diagnosis channel. Answer written back to the plan with the revision chain. Presented UEB6.
+**Context**: Construction - Unit B - Functional Design - Domain Exposition
+
+## Functional Design (Unit B) - UEB6
+**Timestamp**: 2026-10-25T14:06:00Z
+**User Input**: "Recommendation? I'm leaning A to keep the server process clean - push back" then "A"
+**AI Response**: Pushed back with the stronger argument: B is structurally broken for the reuse path (no server start on reuse; the open would have to ride the run_start ingest, opening a tab per invocation). Bootstrap owns the open because it owns the invoke moment. UEB6 answered A. Answer written back to the plan. Domain Exposition (UEB1-UEB6) complete; presented UB1 (first design question).
+**Context**: Construction - Unit B - Functional Design - Domain Exposition complete
+
+## Functional Design (Unit B) - UB1
+**Timestamp**: 2026-10-25T14:08:00Z
+**User Input**: "A"
+**AI Response**: UB1 answered A — the SessionEnd branch folds into the dispatcher; no invoke/shutdown.py module. Open decision 1 closed. Answer written back to the plan. Presented UB2.
+**Context**: Construction - Unit B - Functional Design - design questions
+
+## Functional Design (Unit B) - UB2
+**Timestamp**: 2026-10-25T14:10:00Z
+**User Input**: "A"
+**AI Response**: UB2 answered A — stop_server() no-ops when no connection file exists; hook stays silent, exits 0. Answer written back to the plan. Presented UB3.
+**Context**: Construction - Unit B - Functional Design - design questions
+
+## Functional Design (Unit B) - UB3
+**Timestamp**: 2026-10-25T14:12:00Z
+**User Input**: "A"
+**AI Response**: UB3 answered A — 5-second bounded wait for the connection file; on timeout give up silently and exit 0; re-invoking recovers. Answer written back to the plan. Presented UB4.
+**Context**: Construction - Unit B - Functional Design - design questions
+
+## Functional Design (Unit B) - UB3 correction + UB4
+**Timestamp**: 2026-10-25T14:14:00Z
+**User Input**: "UB3. Wait, no, 10s / UB4. A"
+**AI Response**: UB3 revised from A (5s) to C (10s bounded wait). UB4 answered A — no design change; client refetch/backoff covers the async race; open decision 4 closed. Answers written back to the plan. All exposition (UEB1-UEB6) and design (UB1-UB4) questions answered; proceeding to answer analysis.
+**Context**: Construction - Unit B - Functional Design - design questions complete
+
+## Functional Design (Unit B) - Artifacts
+**Timestamp**: 2026-10-25T14:20:00Z
+**User Input**: (none - automatic)
+**AI Response**: Answer analysis (Step 4): all ten answers concrete; UEB5 and UB3 corrected via clarification chains; no follow-ups needed. Wrote the three artifacts to aidlc-docs/construction/unit-b-hook-path/functional-design/: domain-entities.md (DOMAIN-03 trace list concept→exposition answer; Connection+stop_server+LOOPBACK_ADDRESS relocation, Bootstrap application service owning the cache yaml, dispatcher keyed on hook_event_name with inline SessionEnd branch, server POST /shutdown, state-dir debug log marked infrastructure), business-logic-model.md (three flows: invocation with reuse/spawn/linear branches, SessionEnd stop, forward-only; failure inventory table all silent exit-0; race note UB4), business-rules.md (R1-R14 each citing source; Domain Validation notes DOMAIN-04..08). Domain Validation passed: no blocking findings. Plan checkboxes Steps 1-6 and Domain Validation checklist marked [x].
+**Context**: Construction - Unit B - Functional Design - artifacts generated, awaiting approval
+
+## Functional Design (Unit B) - Approval
+**Timestamp**: 2026-10-25T14:26:00Z
+**AI Prompt**: Functional Design completion message (artifacts at aidlc-docs/construction/unit-b-hook-path/functional-design/)
+**User Response**: "approve and continue"
+**Status**: Approved
+**Context**: Construction - Unit B - Functional Design approved; proceeding to NFR Requirements
+
+## NFR Requirements (Unit B) - Plan
+**Timestamp**: 2026-10-25T14:30:00Z
+**User Input**: (none - automatic stage progression after Functional Design approval)
+**AI Response**: Started Unit B NFR Requirements. Created aidlc-docs/construction/plans/unit-b-hook-path-nfr-requirements-plan.md: 8-category applicability table (security/tech-stack/reliability APPLICABLE, others N/A or no-question-needed with justification), questions NFRB1-NFRB4 (NFRB1 = /shutdown security review per open decision 3 + SECURITY extension blocking; NFRB2 = 1s timeouts; NFRB3 = sys.executable -m spawn vs console script; NFRB4 = macOS+Linux vs Windows browser-open). Questions asked one-by-one in chat.
+**Context**: Construction - Unit B - NFR Requirements
+
+## NFR Requirements (Unit B) - NFRB1
+**Timestamp**: 2026-10-25T14:32:00Z
+**User Input**: "A"
+**AI Response**: NFRB1 answered A: the /ingest-equivalent checks suffice for /shutdown (Bearer token + Host allowlist + loopback-only + no body + 401/204); the SECURITY review finds no additional requirement. Open decision 3 closed. Presented NFRB2 next.
+**Context**: Construction - Unit B - NFR Requirements Q&A
+
+## NFR Requirements (Unit B) - NFRB2
+**Timestamp**: 2026-10-25T14:34:00Z
+**User Input**: "A"
+**AI Response**: NFRB2 answered A: 1s timeouts for both stop_server() and the reuse probe, mirroring the existing /ingest POST timeout. Presented NFRB3 next.
+**Context**: Construction - Unit B - NFR Requirements Q&A
+
+## NFR Requirements (Unit B) - NFRB3
+**Timestamp**: 2026-10-25T14:36:00Z
+**User Input**: "A"
+**AI Response**: NFRB3 answered A: Bootstrap spawns the server via sys.executable -m claude_workflow_viz serve (pipx-robust, PATH-independent). Presented NFRB4 next.
+**Context**: Construction - Unit B - NFR Requirements Q&A
+
+## NFR Requirements (Unit B) - NFRB4
+**Timestamp**: 2026-10-25T14:40:00Z
+**User Input**: "How much extra effort is it do to B?" then "B - add a test to run in github CI in a windows env"
+**AI Response**: Assessed B's effort (~30-60 min: one pure selection function open/xdg-open/os.startfile + unit tests + README; real cost is shipping unverified on Windows — no Windows runner in the dev loop). User chose B with an added condition: a test that runs in GitHub CI on a Windows environment. Recorded: NFRB4 = B + CI. Consequence noted: the repo has no .github/workflows (checked — none exists), so Unit B gains a GitHub Actions workflow with a windows-latest job; the workflow file lands in Unit B code generation, and the Windows job exercises the win32 branch + full suite on push. NFR requirement recorded: the Windows browser-open path must be exercised in CI on a Windows runner.
+**Context**: Construction - Unit B - NFR Requirements Q&A
+
+## NFR Requirements (Unit B) - Artifacts
+**Timestamp**: 2026-10-25T14:45:00Z
+**User Input**: (none - automatic)
+**AI Response**: Answer analysis (Step 4): all four answers concrete; NFRB4 clarification chain (effort assessment → B + Windows-CI condition) resolved; no follow-ups needed. Wrote artifacts to aidlc-docs/construction/unit-b-hook-path/nfr-requirements/: nfr-requirements.md (SECURITY-01..15 checklist applied to /shutdown + spawn log path — zero security findings; reliability with 1s timeouts/10s wait/retry semantics; performance no-benchmark; availability/scalability N/A; maintainability/usability; PBT targets = dispatch selection + platform open-command selection; Windows CI requirement recorded) and tech-stack-decisions.md (7 decisions: /shutdown checks, 1s timeouts, sys.executable -m spawn, open/xdg-open/os.startfile, GitHub Actions windows-latest job, no new deps, no PID handling). Plan checkboxes Steps 1-5 [x].
+**Context**: Construction - Unit B - NFR Requirements - artifacts generated, awaiting approval
+
+## NFR Requirements (Unit B) - Approval
+**Timestamp**: 2026-10-25T14:50:00Z
+**AI Prompt**: NFR Requirements completion message (artifacts at aidlc-docs/construction/unit-b-hook-path/nfr-requirements/)
+**User Response**: "Approved"
+**Status**: Approved
+**Context**: Construction - Unit B - NFR Requirements approved; proceeding to NFR Design
+
+## NFR Design (Unit B) - Plan
+**Timestamp**: 2026-10-25T14:55:00Z
+**User Input**: (none - automatic stage progression)
+**AI Response**: Started Unit B NFR Design. Created aidlc-docs/construction/plans/unit-b-hook-path-nfr-design-plan.md: category applicability table (resilience yes with Unit A's six resiliency decisions project-wide and NOT re-asked; scalability N/A; performance confirm-only with fixed bounds; security yes; logical components yes), and three questions NRB1 (debug-log reuse vs split), NRB2 (double-spawn race: accept orphan vs atomic claim vs owner-check-at-startup), NRB3 (/shutdown deny-on-error confirmation). Questions asked one-by-one in chat.
+**Context**: Construction - Unit B - NFR Design
+
+## NFR Design (Unit B) - Answer NRB1
+**Timestamp**: 2026-10-25T14:58:00Z
+**User Input**: "A"
+**AI Response**: NRB1 = A: one shared debug log file in the state dir — same ~1 MiB cap, same oldest-truncation, every write exception-guarded. All three writers (Bootstrap failure summaries, spawned server stdout/stderr, Unit A parser errors) share it. Recorded in the plan. Presented NRB2.
+**Context**: Construction - Unit B - NFR Design - Q&A
+
+## NFR Design (Unit B) - Answer NRB2
+**Timestamp**: 2026-10-25T15:00:00Z
+**User Input**: "A"
+**AI Response**: NRB2 = A: accept the double-spawn orphan — the spawn window is seconds, the case is rare, and the orphan dies with the machine/login session. No claim file, no owner-check. Recorded in the plan. Presented NRB3.
+**Context**: Construction - Unit B - NFR Design - Q&A
+
+## NFR Design (Unit B) - Answer NRB4 + port-selection directive
+**Timestamp**: 2026-10-25T15:10:00Z
+**User Input**: "B - also needs a similar mechanism to ../agentic-dev-loop for port-selection"
+**AI Response**: NRB4 = B: design concurrent different workflows into Unit B now (server holds graphs keyed by workflow name, loads on demand; Bootstrap writes per-workflow cache files; dashboard URL carries the workflow name; /graph accepts a workflow parameter). This amends the approved Unit B Functional Design artifacts (multi-workflow graph registry) — recorded as FD Amendment 1. Port-selection directive: adopt a mechanism similar to the agentic-dev-loop engine's (preferred port, EADDRINUSE → port 0 fallback, actual bound port recorded in server.json, stale-listener sweep before bind, Windows reuse-safety). Engine mechanism read at /Users/luke/dev/work/agent-engine/src/agentic_dev_loop/{viz/server.py serve_viz + _ReuseSafeServer, viz/__main__.py --port default 8321, engine/actions.py _listening_pids/kill_listeners_on_port}. NRB3 still pending.
+**Context**: Construction - Unit B - NFR Design - Q&A + FD amendment
+
+## NFR Design (Unit B) - Answer NRB3
+**Timestamp**: 2026-10-25T15:16:00Z
+**User Input**: "A"
+**AI Response**: NRB3 = A: /shutdown deny-on-error confirmed — no request can stop the server without the token; a bad request changes nothing. Recorded in the plan. All three NRB questions answered (NRB1 shared debug log, NRB2 accept double-spawn orphan, NRB3 deny-on-error) plus NRB4 = B multi-workflow amendment. One remaining question: preferred-port default value (port-selection mechanism per the agentic-dev-loop reference).
+**Context**: Construction - Unit B - NFR Design - Q&A
+
+## NFR Design (Unit B) - Answer NRB5
+**Timestamp**: 2026-10-25T15:20:00Z
+**User Input**: "A"
+**AI Response**: NRB5 = A: preferred port 8322 (avoids collision with the agentic-dev-loop engine's 8321; the sweep's match filter would keep the two tools from killing each other even on the same port, but 8322 keeps both on preferred ports side by side). All NFR Design questions now answered: NRB1-NRB3, NRB4 = B (multi-workflow + port-selection), NRB5 = A.
+**Context**: Construction - Unit B - NFR Design - Q&A complete
+
+## NFR Design (Unit B) - Artifacts
+**Timestamp**: 2026-10-25T15:25:00Z
+**User Input**: (none - automatic)
+**AI Response**: All five NFR Design questions answered (NRB1 shared debug log; NRB2 orphan acceptance; NRB3 deny-on-error; NRB4 = B multi-workflow + port-selection directive; NRB5 = A preferred port 8322). Wrote the two artifacts to aidlc-docs/construction/unit-b-hook-path/nfr-design/: nfr-design-patterns.md (shared debug log, orphan acceptance with sweep reclamation, SessionEnd retry semantics, silent degradation, port-selection mechanism — 8322 preferred, EADDRINUSE→port 0, sweep before bind by Bootstrap with match claude-workflow-viz + cwd positive-only + self-PID exclusion + lsof-absent no-op, allow_reuse_address win32 False, bound port in server.json; deny-on-error /shutdown; scalability N/A; fixed 1s/10s bounds; Windows CI implications) and logical-components.md (12 components: Bootstrap, open-command selector, sweep helper, Dispatcher, Connection+stop_server+LOOPBACK_ADDRESS, server lifecycle /shutdown, server graph registry, Event workflow field, client workflow mapping, state-dir debug log, CI workflow file; integration points). Plan checkboxes marked [x].
+**Context**: Construction - Unit B - NFR Design - artifacts generated, awaiting approval
+
+## NFR Design (Unit B) - Approval
+**Timestamp**: 2026-10-25T15:26:00Z
+**AI Prompt**: NFR Design completion message (artifacts at aidlc-docs/construction/unit-b-hook-path/nfr-design/)
+**User Response**: "approved"
+**Status**: Approved
+**Context**: Construction - Unit B - NFR Design approved; proceeding to Code Generation
+
+## Code Generation (Unit B) - Plan
+**Timestamp**: 2026-10-25T15:32:00Z
+**User Input**: (none - automatic stage progression after NFR Design approval)
+**AI Response**: Wrote the Unit B code-generation plan to aidlc-docs/construction/plans/unit-b-hook-path-b-code-generation-plan.md (filename carries the -b- middle segment required by the engine's aidlc loader glob). 14 steps: connection_file.stop_server + LOOPBACK_ADDRESS relocation; server POST /shutdown + preferred-port 8322 bind/EADDRINUSE fallback; server graph registry (?workflow= on-demand load); invoke/bootstrap.py; platform open-command selector + port sweep helper (+PBT); dispatcher branches; Event.workflow on run_start; viz-core.js/app.js workflow mapping + selector; pyproject invoke subpackage; GitHub Actions CI (ubuntu + windows-latest per NFRB4=B); README invoke/shutdown/port sections; N/A markers; code/summary.md. Verified Unit A's append_debug_log exists in graph_source/parse_failures.py (reused per NRB1). Presented plan + execution-vehicle question in chat.
+**Context**: Construction - Unit B - Code Generation Part 1 (planning), awaiting approval
+
+## Code Generation (Unit B) - Approval
+**Timestamp**: 2026-10-25T15:40:00Z
+**User Input**: "Q1. A approved with one addition: the scope includes a run-demo.sh that does an end-to end test (statically parses a fictional claude workflow, spins up the server and opens the viz in browser, and simulates the update hooks) / Q2. B - I'll do it"
+**AI Response**: Plan approved with the run-demo.sh addition recorded as Step 13 (end-to-end demo: parse fixture workflow, sweep + spawn server, open dashboard, simulate hook payloads to /ingest and /shutdown). Execution vehicle B: agentic-dev-loop, user-triggered. Updated aidlc-state.md Current Stage line to name the unit as its directory for the loader autodetect contract.
+**Context**: Construction - Unit B - Code Generation Part 1 approved; awaiting the user's dev-loop run

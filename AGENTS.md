@@ -78,6 +78,18 @@ Never silently degrade to a less-functional code path.
 
 ## Development workflow
 
+## Unit decomposition — vertical slices
+
+Each construction unit must ship a usable, visible change on its own —
+a vertical slice of product capability, not a horizontal layer.
+A unit that lands only internal plumbing with no observable difference
+for a user of the product does not satisfy this rule.
+
+This does not conflict with DDD bounded contexts. A unit may deliver
+only part of a bounded context, leaving the rest of that context to
+later units: boundaries decide where code lives; units decide the
+order it lands in.
+
 **Always use TDD (test-driven development) — red, green, refactor.**
 
 1. **Red** — write a failing test that defines the expected behaviour.
