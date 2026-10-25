@@ -13,6 +13,7 @@ import {
   buildFlowchart,
   graphChanged,
   graphRetryDelaySeconds,
+  inferSkipped,
   graphFingerprint,
   instancesForNode,
   mermaidIds,
@@ -584,4 +585,165 @@ test("sessionWorkflows ignores run_start events without a workflow", () => {
 
 test("workflowNames lists distinct names sorted", () => {
   assert.deepEqual(workflowNames({ a: "rca", b: "implement", c: "rca" }), ["implement", "rca"]);
+});
+
+// --- skipped-stage inference -------------------------------------------------
+
+function linearGraph(ids) {
+  return {
+    name: "chain",
+    entry: ids[0],
+    nodes: [
+      ...ids.slice(0, -1).map((id, index) => ({
+        id,
+        label: id,
+        stage: null,
+        step_key: null,
+        terminal: false,
+        on_pass: ids[index + 1],
+        on_fail: null,
+      })),
+      {
+        id: ids.at(-1),
+        label: ids.at(-1),
+        stage: null,
+        step_key: null,
+        terminal: true,
+        on_pass: null,
+        on_fail: null,
+      },
+    ],
+  };
+}
+
+function skippedInstance(nodeId, fields = {}) {
+  return {
+    nodeId,
+    slice: "S1",
+    round: 1,
+    stepKey: "",
+    statuses: ["running"],
+    summary: "",
+    finished: false,
+    agentId: "",
+    runId: "",
+    result: null,
+    sequence: 0,
+    ...fields,
+  };
+}
+
+function skippedOf(graph, instances, stopped = false) {
+  return inferSkipped(graph, instances, stopped, rules);
+}
+
+test("inferSkipped marks a bypassed node once its successor arrives", () => {
+  const graph = linearGraph(["a", "b", "c", "d", "e"]);
+  const instances = [
+    skippedInstance("a", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+    skippedInstance("c", { finished: false, sequence: 2 }),
+  ];
+  assert.deepEqual([...skippedOf(graph, instances)], ["b"]);
+});
+
+test("inferSkipped marks a whole bypassed tail through the transitive closure", () => {
+  const graph = linearGraph(["a", "b", "c", "d"]);
+  const instances = [
+    skippedInstance("a", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+  ];
+  assert.deepEqual([...skippedOf(graph, instances, true)], ["b", "c"]);
+});
+
+test("inferSkipped never skips a node that has an instance", () => {
+  const graph = linearGraph(["a", "b", "c", "d"]);
+  const instances = [
+    skippedInstance("a", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+    skippedInstance("b", { finished: false, sequence: 2 }),
+  ];
+  assert.deepEqual([...skippedOf(graph, instances, true)], []);
+});
+
+test("inferSkipped excludes terminal nodes", () => {
+  const graph = linearGraph(["a", "b", "c", "d"]);
+  const instances = [
+    skippedInstance("a", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+  ];
+  const skipped = skippedOf(graph, instances, true);
+  assert.ok(skipped.has("b"));
+  assert.ok(skipped.has("c"));
+  assert.ok(!skipped.has("d"));
+});
+
+test("inferSkipped is round-scoped: a higher-round re-entry is a new instance and leaves the old skip", () => {
+  const graph = {
+    name: "round",
+    entry: "develop",
+    nodes: [
+      { id: "develop", label: "Develop", stage: "develop", terminal: false, on_pass: "gate", on_fail: null },
+      { id: "gate", label: "Gate", stage: "gate", terminal: false, on_pass: "verify", on_fail: "develop" },
+      { id: "verify", label: "Verify", stage: "verify", terminal: false, on_pass: "classify", on_fail: "develop" },
+      { id: "classify", label: "Classify", stage: "classify", terminal: false, on_pass: "done", on_fail: "develop" },
+      { id: "done", label: "Done", stage: null, terminal: true, on_pass: null, on_fail: null },
+    ],
+  };
+  const instances = [
+    skippedInstance("develop", { round: 1, finished: true, statuses: ["running", "pass"], sequence: 1 }),
+    skippedInstance("gate", { round: 1, finished: true, statuses: ["running", "pass"], sequence: 2 }),
+    skippedInstance("classify", { round: 1, finished: true, statuses: ["running", "fail"], sequence: 3 }),
+    skippedInstance("develop", { round: 2, finished: false, statuses: ["running"], sequence: 4 }),
+  ];
+  assert.equal(instances.find((item) => item.nodeId === "develop" && item.round === 1).finished, true);
+  assert.equal(instances.find((item) => item.nodeId === "develop" && item.round === 2).finished, false);
+  assert.deepEqual([...skippedOf(graph, instances)], ["verify"]);
+});
+
+test("inferSkipped on an interrupted run marks only nodes whose successor arrived", () => {
+  const graph = linearGraph(["a", "b", "c", "d", "e"]);
+  const instances = [
+    skippedInstance("a", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+    skippedInstance("c", { finished: false, sequence: 2 }),
+  ];
+  assert.deepEqual([...skippedOf(graph, instances)], ["b"]);
+});
+
+test("inferSkipped waits for the on_pass successor, ignoring an instanced loop-back target", () => {
+  const graph = {
+    name: "gated",
+    entry: "develop",
+    nodes: [
+      { id: "develop", label: "Develop", stage: "develop", terminal: false, on_pass: "gate", on_fail: null },
+      { id: "gate", label: "Gate", stage: "gate", terminal: false, on_pass: "verify", on_fail: "develop" },
+      { id: "verify", label: "Verify", stage: "verify", terminal: false, on_pass: "classify", on_fail: "develop" },
+      { id: "classify", label: "Classify", stage: "classify", terminal: false, on_pass: "done", on_fail: null },
+      { id: "done", label: "Done", stage: null, terminal: true, on_pass: null, on_fail: null },
+    ],
+  };
+  const instances = [
+    skippedInstance("develop", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+    skippedInstance("gate", { finished: true, statuses: ["running", "pass"], sequence: 2 }),
+  ];
+  assert.deepEqual([...skippedOf(graph, instances)], []);
+});
+
+test("inferSkipped is deterministic and independent of instance order", () => {
+  const graph = linearGraph(["a", "b", "c", "d"]);
+  const instances = [
+    skippedInstance("a", { finished: true, statuses: ["running", "pass"], sequence: 1 }),
+    skippedInstance("c", { finished: false, sequence: 2 }),
+  ];
+  const first = [...skippedOf(graph, instances)].sort();
+  const reversed = [...skippedOf(graph, [...instances].reverse())].sort();
+  assert.deepEqual(first, ["b"]);
+  assert.deepEqual(reversed, first);
+});
+
+test("viewClasses reports the skipped node ids for a slice", () => {
+  const state = replay([
+    event({ step_key: "planner", stage: "planner", agent_id: "p" }),
+    event({ kind: "step_stop", step_key: "planner", status: "pass", agent_id: "p" }),
+    develop(1),
+    event({ kind: "step_stop", step_key: "S1/develop:r1", status: "pass", agent_id: "d1" }),
+    event({ step_key: "S1/code-review:r1", slice: "S1", stage: "code-review", round: 1, agent_id: "c1" }),
+  ]);
+  assert.deepEqual([...viewClasses(state, graph, rules, "S1").skipped], ["gate"]);
 });

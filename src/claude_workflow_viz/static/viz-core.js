@@ -393,7 +393,81 @@ export function instancesForNode(view, nodeId) {
     .sort((left, right) => (left.round ?? 0) - (right.round ?? 0) || left.sequence - right.sequence);
 }
 
-/** What the DOM needs for one slice: a status class per Mermaid node id and the edges to mark. */
+/** Nodes the run bypassed in the selected view: non-terminal, no instance, an on_pass
+ *  predecessor that passed or was itself skipped, and a forward node that arrived (or the run
+ *  stopped). The fixpoint is a pure function of graph + instances (UED4-A): iteration order
+ *  never changes the result set. */
+export function inferSkipped(graph, instances, stopped, rules) {
+  const nodes = graph.nodes;
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const instancesByNode = new Map();
+  for (const item of instances) {
+    if (item.nodeId === null) {
+      continue;
+    }
+    const existing = instancesByNode.get(item.nodeId);
+    if (existing === undefined) {
+      instancesByNode.set(item.nodeId, [item]);
+    } else {
+      existing.push(item);
+    }
+  }
+  const hasInstance = new Set(instancesByNode.keys());
+  const passed = new Set();
+  for (const [nodeId, list] of instancesByNode) {
+    const latest = list.reduce((right, item) => (item.sequence > right.sequence ? item : right));
+    if (nodeStatus(latest, rules) === "pass") {
+      passed.add(nodeId);
+    }
+  }
+  const forward = new Map();
+  for (const node of nodes) {
+    forward.set(node.id, forwardReachable(node.id, byId));
+  }
+  const skipped = new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const node of nodes) {
+      if (node.terminal || hasInstance.has(node.id) || skipped.has(node.id)) {
+        continue;
+      }
+      const predecessorPassed = nodes.some(
+        (candidate) =>
+          candidate.on_pass === node.id && (passed.has(candidate.id) || skipped.has(candidate.id)),
+      );
+      if (!predecessorPassed) {
+        continue;
+      }
+      const arrived = stopped || [...forward.get(node.id)].some((target) => hasInstance.has(target));
+      if (!arrived) {
+        continue;
+      }
+      skipped.add(node.id);
+      changed = true;
+    }
+  }
+  return skipped;
+}
+
+/** Every node reachable from `startId` following on_pass edges; loop-backs are not forward. */
+function forwardReachable(startId, byId) {
+  const seen = new Set();
+  const stack = [startId];
+  while (stack.length > 0) {
+    const node = byId.get(stack.pop());
+    if (node === undefined || !node.on_pass) {
+      continue;
+    }
+    if (!seen.has(node.on_pass)) {
+      seen.add(node.on_pass);
+      stack.push(node.on_pass);
+    }
+  }
+  return seen;
+}
+
+/** What the DOM needs for one slice: a status class per Mermaid node id, the skipped node ids, and the edges to mark. */
 export function viewClasses(state, graph, rules, slice) {
   const view = sliceView(state, slice);
   const ids = mermaidIds(graph);
@@ -405,8 +479,10 @@ export function viewClasses(state, graph, rules, slice) {
       .at(-1);
     nodes[ids.get(node.id)] = `status-${nodeStatus(latest ?? null, rules)}`;
   }
+  const stopped = bannerStatus(state) === "finished";
   return {
     nodes,
+    skipped: inferSkipped(graph, Object.values(view.instances), stopped, rules),
     activeEdge: activeEdge(view, graph, slice),
     loopBackEdges: loopBackEdges(view, graph, slice),
   };

@@ -154,6 +154,13 @@ main {
   stroke: #cf222e;
 }
 
+#graph g.node.status-skipped rect,
+#graph g.node.status-skipped path {
+  fill: #f0f2f4;
+  stroke: #8c959f;
+  stroke-dasharray: 6 4;
+}
+
 #graph g.node.selected rect,
 #graph g.node.selected path {
   stroke-width: 4px;
@@ -169,6 +176,11 @@ main {
   stroke-width: 3px;
   stroke-dasharray: 8 6;
   animation: loop-back-flow 0.8s linear infinite;
+}
+
+#graph .flowchart-link.edge-skipped {
+  stroke: #d0d7de;
+  stroke-width: 2px;
 }
 
 @keyframes loop-back-flow {

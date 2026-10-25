@@ -145,7 +145,9 @@ function mermaidIdOf(element) {
   return mermaidNodeIdFromElementId(element.id);
 }
 
-const STATUS_CLASSES = ["pending", "running", "retry", "pass", "fail"].map((name) => `status-${name}`);
+const STATUS_CLASSES = ["pending", "running", "retry", "pass", "fail", "skipped"].map(
+  (name) => `status-${name}`,
+);
 
 function edgeEnds(element) {
   return mermaidEdgeEndsFromElementId(element.id);
@@ -168,18 +170,23 @@ function applyClasses() {
   const toMermaid = (edge) => edge && { from: ids.get(edge.from), to: ids.get(edge.to) };
   const active = toMermaid(classes.activeEdge);
   const loopBack = classes.loopBackEdges.map(toMermaid);
+  const skipped = new Set([...classes.skipped].map((nodeId) => ids.get(nodeId)));
   for (const node of svg.querySelectorAll("g.node")) {
     const id = mermaidIdOf(node);
     node.classList.remove(...STATUS_CLASSES);
-    if (id !== null && classes.nodes[id]) {
+    if (id !== null && skipped.has(id)) {
+      node.classList.add("status-skipped");
+    } else if (id !== null && classes.nodes[id]) {
       node.classList.add(classes.nodes[id]);
     }
     node.classList.toggle("selected", id !== null && id === ids.get(page.selectedNode));
   }
   for (const edge of svg.querySelectorAll(".flowchart-link")) {
     const ends = edgeEnds(edge);
+    const skippedEnd = ends !== null && (skipped.has(ends.from) || skipped.has(ends.to));
     edge.classList.toggle("edge-active", ends !== null && active !== null && hasEdge([active], ends));
     edge.classList.toggle("edge-loop-back", ends !== null && hasEdge(loopBack, ends));
+    edge.classList.toggle("edge-skipped", skippedEnd);
   }
 }
 
