@@ -42,7 +42,6 @@ import json
 import queue
 import signal
 import sys
-import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import resources
@@ -266,14 +265,11 @@ class _Handler(BaseHTTPRequestHandler):
             return
         port, token = self.server.port, self.server.token
         self._respond(HTTPStatus.NO_CONTENT)
-        # `server_close()` joins this server's request threads, so it must not run on the
-        # handler thread itself (a self-join). A short-lived thread owns the stop instead.
-        threading.Thread(target=self._stop_and_cleanup, args=(port, token), daemon=True).start()
-
-    def _stop_and_cleanup(self, port: int, token: str) -> None:
-        """Stop `serve_forever`, close the socket, remove our connection file (SIGINT sequence)."""
+        # Wake the serve_forever poll loop. The serve() finally block owns closing the
+        # socket: keeping the close on the main thread only avoids two threads closing the
+        # same socket concurrently, which intermittently raises on Windows. The handler
+        # owns removing the connection file, which needs no socket access.
         self.server.shutdown()
-        self.server.server_close()
         Connection(port, token).remove_if_token_matches(token)
 
     def do_GET(self) -> None:
