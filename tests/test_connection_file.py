@@ -1,8 +1,9 @@
 import json
 import os
-import stat
 
 import pytest
+
+from _platform import assert_private_mode
 
 from claude_workflow_viz.dashboard.connection_file import (
     Connection,
@@ -27,20 +28,20 @@ def test_persistence_lives_on_the_connection_entity():
 
 def test_written_file_is_private_and_directory_is_private(state_dir):
     path = Connection(port=8123, token="secret").write()
-    assert stat.S_IMODE(path.stat().st_mode) == 0o600
-    assert stat.S_IMODE(state_dir.stat().st_mode) == 0o700
+    assert_private_mode(path, 0o600)
+    assert_private_mode(state_dir, 0o700)
 
 
 def test_ensure_state_directory_creates_a_private_directory(state_dir):
     assert ensure_state_directory() == state_dir
-    assert stat.S_IMODE(state_dir.stat().st_mode) == 0o700
+    assert_private_mode(state_dir, 0o700)
 
 
 def test_ensure_state_directory_tightens_an_existing_permissive_directory(state_dir):
     state_dir.mkdir()
     state_dir.chmod(0o755)
     ensure_state_directory()
-    assert stat.S_IMODE(state_dir.stat().st_mode) == 0o700
+    assert_private_mode(state_dir, 0o700)
 
 
 def test_write_then_read_round_trips_port_and_token(state_dir):
@@ -73,6 +74,7 @@ def test_default_location_is_under_home_local_state(tmp_path, monkeypatch):
     monkeypatch.delenv("CLAUDE_WORKFLOW_VIZ_STATE_DIR", raising=False)
     monkeypatch.delenv("XDG_STATE_HOME", raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # Path.home() on Windows
     path = Connection(port=1, token="a").write()
     assert path == tmp_path / ".local" / "state" / "claude-workflow-viz" / "server.json"
 

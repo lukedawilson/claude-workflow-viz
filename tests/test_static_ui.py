@@ -19,7 +19,11 @@ def test_vendored_mermaid_matches_the_recorded_sha256() -> None:
     recorded = re.search(r"sha256:\s*`?([0-9a-f]{64})`?", notes)
     assert recorded is not None, "VENDORED.md must record `sha256: <hex>`"
     assert re.search(r"version:\s*`?11\.\d+\.\d+`?", notes), "VENDORED.md must record version 11.x"
-    actual = hashlib.sha256((STATIC / "mermaid.min.js").read_bytes()).hexdigest()
+    # Normalise CRLF: a Windows checkout may convert line endings, and the recorded
+    # hash is over the LF bytes (also enforced by the `-text` gitattributes entry).
+    actual = hashlib.sha256(
+        (STATIC / "mermaid.min.js").read_bytes().replace(b"\r\n", b"\n")
+    ).hexdigest()
     assert actual == recorded.group(1)
     assert (STATIC / "mermaid.LICENSE").read_text("utf-8").strip()
 

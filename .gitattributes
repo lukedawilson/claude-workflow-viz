@@ -1,0 +1,3 @@
+# The vendored mermaid bundle is a byte-exact third-party artifact whose recorded
+# sha256 must survive checkout conversion: keep it byte-identical on every platform.
+static/mermaid.min.js -text

@@ -1,11 +1,12 @@
 """`Bootstrap.run`: parse, spawn/reuse, and open the dashboard (FR6/Q2/R11/R18)."""
 
-import stat
 import sys
 import threading
 from pathlib import Path
 
 import pytest
+
+from _platform import assert_private_mode
 
 from claude_workflow_viz.dashboard.connection_file import Connection
 from claude_workflow_viz.dashboard.server import start_server
@@ -171,7 +172,7 @@ def test_detached_spawn_logs_no_token_and_keeps_the_state_dir_private(tmp_path):
         log = (tmp_path / "state" / "debug.log").read_text(encoding="utf-8")
         assert connection.token not in log
         assert "listening on" in log
-        assert stat.S_IMODE((tmp_path / "state").stat().st_mode) == 0o700
+        assert_private_mode((tmp_path / "state"), 0o700)
     finally:
         Connection.stop_server()
 

@@ -1,13 +1,14 @@
 import http.client
 import json
 import os
-import stat
 import threading
 import time
 from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+
+from _platform import assert_private_mode
 
 from claude_workflow_viz.dashboard.connection_file import Connection
 from claude_workflow_viz.dashboard.server import MAXIMUM_BODY_BYTES, start_server
@@ -102,7 +103,7 @@ def test_connection_file_has_bound_port_and_token_mode_0600(running):
     assert connection is not None
     assert (connection.port, connection.token) == (port, token)
     path = Path(os.environ["CLAUDE_WORKFLOW_VIZ_STATE_DIR"]) / "server.json"
-    assert stat.S_IMODE(os.stat(path).st_mode) == 0o600
+    assert_private_mode(Path(path), 0o600)
 
 
 @pytest.mark.parametrize("query", ["", "?token=wrong"])
@@ -171,6 +172,7 @@ def test_no_host_option_exists():
 
 
 def test_serve_subcommand_starts_and_shuts_down_cleanly_on_interrupt(tmp_path):
+    import json
     import signal
     import subprocess
     import sys
@@ -188,7 +190,22 @@ def test_serve_subcommand_starts_and_shuts_down_cleanly_on_interrupt(tmp_path):
         while not (tmp_path / "server.json").exists() and time.monotonic() < deadline:
             time.sleep(0.05)
         assert (tmp_path / "server.json").exists()
-        process.send_signal(signal.SIGINT)
+        if os.name == "nt":
+            # Windows has no POSIX signals; the SessionEnd stop path (POST /shutdown)
+            # is the product's shutdown mechanism there and cleans up the same way.
+            connection_file = json.loads((tmp_path / "server.json").read_text("utf-8"))
+            conn = http.client.HTTPConnection("127.0.0.1", connection_file["port"], timeout=5)
+            conn.request(
+                "POST",
+                "/shutdown",
+                headers={"Authorization": f"Bearer {connection_file['token']}"},
+            )
+            response = conn.getresponse()
+            response.read()
+            conn.close()
+            assert response.status == 204
+        else:
+            process.send_signal(signal.SIGINT)
         assert process.wait(timeout=10) == 0
         assert b"Traceback" not in process.stderr.read()
     finally:

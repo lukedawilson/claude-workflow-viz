@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -724,8 +725,13 @@ def test_workflow_stop_result_is_none_when_journal_is_unusable(tmp_path: Path) -
     other_agent = tmp_path / "other"
     _write_journal(other_agent, _result_line("a2", "OK"), json.dumps({"type": "started"}))
 
+    cases = [missing, directory_journal, other_agent]
+    if os.name != "nt":
+        # chmod(0) cannot make a file unreadable on Windows: it sets the read-only
+        # attribute, which still permits reading.
+        cases.append(unreadable)
     try:
-        for run_directory in (missing, unreadable, directory_journal, other_agent):
+        for run_directory in cases:
             event = normalise(_workflow_stop(run_directory, "a1"), _clock)
             assert event is not None
             assert event.result is None

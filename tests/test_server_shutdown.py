@@ -67,6 +67,11 @@ def test_explicit_zero_port_still_binds_an_ephemeral_port(running):
     assert port != 0
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="the Windows runner excludes port 8322 from binding (WinError 10013), "
+    "so the busy-preferred-port scenario cannot be built there",
+)
 def test_default_port_binds_8322_or_falls_back_when_busy(tmp_path, monkeypatch):
     blocker = socket.socket()
     blocker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

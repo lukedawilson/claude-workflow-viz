@@ -1,7 +1,8 @@
-import sys
 from pathlib import Path
 
 import pytest
+
+from _platform import path_with_console_scripts
 
 from claude_workflow_viz.cli import main
 
@@ -100,7 +101,7 @@ def test_serve_prints_ui_url_with_token_and_exposes_graph(tmp_path, monkeypatch)
 
 def test_install_writes_into_cwd_and_prints_summary(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("PATH", str(Path(sys.executable).parent))
+    monkeypatch.setenv("PATH", path_with_console_scripts())
     assert main(["install"]) == 0
     output = capsys.readouterr().out
     assert "run a workflow to see the dashboard" in output
@@ -120,7 +121,7 @@ def test_install_missing_binary_prints_error(tmp_path, monkeypatch, capsys):
 
 def test_install_force_and_viz_dir_flags(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv("PATH", str(Path(sys.executable).parent))
+    monkeypatch.setenv("PATH", path_with_console_scripts())
     (tmp_path / ".claude" / "commands").mkdir(parents=True)
     (tmp_path / ".claude" / "commands" / "viz.md").write_text("old", encoding="utf-8")
     assert main(["install", "--force", "--viz-dir", "custom/viz"]) == 0

@@ -64,7 +64,7 @@ def test_build_fallback_prompt_carries_the_contract():
     )
     prompt = report.build_fallback_prompt(Path("repo/.claude/workflows/implement.js"), Path(".viz"))
     assert "implement.js" in prompt
-    assert ".viz/implement.viz.yaml" in prompt
+    assert str(Path(".viz") / "implement.viz.yaml") in prompt
     assert "Graph.load" in prompt
     assert "unsupported-label" in prompt
     assert "missing-max-rounds" in prompt

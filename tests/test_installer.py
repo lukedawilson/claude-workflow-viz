@@ -7,8 +7,8 @@ else uses `tmp_path` and real file I/O, per the mock policy.
 """
 
 import json
+import os
 import shutil
-import sys
 import tempfile
 from pathlib import Path
 
@@ -23,21 +23,28 @@ from claude_workflow_viz.install.installer import (
     InstallError,
 )
 
+from _platform import assert_private_mode, path_with_console_scripts
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
-VENV_BIN = Path(sys.executable).parent
 
 
 @pytest.fixture
 def on_real_path(monkeypatch):
-    monkeypatch.setenv("PATH", str(VENV_BIN))
+    monkeypatch.setenv("PATH", path_with_console_scripts())
 
 
 @pytest.fixture
 def failing_binary(monkeypatch):
     with tempfile.TemporaryDirectory(dir=REPO_ROOT) as directory:
-        binary = Path(directory) / "claude-workflow-viz"
-        binary.write_text("#!/bin/sh\necho boom >&2\nexit 3\n", encoding="utf-8")
-        binary.chmod(0o755)
+        if os.name == "nt":
+            # `shutil.which` only finds extension-bearing names on Windows
+            # (PATHEXT); a `.cmd` file is findable and CreateProcess runs it.
+            binary = Path(directory) / "claude-workflow-viz.cmd"
+            binary.write_text("@echo boom 1>&2\r\n@exit /b 3\r\n", encoding="utf-8")
+        else:
+            binary = Path(directory) / "claude-workflow-viz"
+            binary.write_text("#!/bin/sh\necho boom >&2\nexit 3\n", encoding="utf-8")
+            binary.chmod(0o755)
         monkeypatch.setenv("PATH", directory)
         yield binary
 
@@ -71,7 +78,7 @@ def test_fresh_install_writes_five_registrations_and_command(tmp_path, on_real_p
     assert hooks["SessionEnd"][0]["hooks"][0]["command"] == HOOK_COMMAND
 
     assert str(DEFAULT_VIZ_DIR) in _command_path(tmp_path).read_text(encoding="utf-8")
-    assert oct(_settings_path(tmp_path).stat().st_mode & 0o777) == "0o600"
+    assert_private_mode(_settings_path(tmp_path), 0o600)
 
 
 def test_second_install_writes_nothing(tmp_path, on_real_path):
