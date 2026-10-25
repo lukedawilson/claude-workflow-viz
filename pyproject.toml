@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "claude-workflow-viz"
-version = "0.1.0"
+version = "1.0.0a1"
 description = "Live Mermaid flowchart of a Claude Code Workflow run, driven by hooks"
 readme = "README.md"
 requires-python = ">=3.12"
