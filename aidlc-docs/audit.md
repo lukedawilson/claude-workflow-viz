@@ -936,3 +936,127 @@ Q5 - A"
 **User Response**: "B - I'll drive it" (vehicle B, agentic dev loop) then "A" (plan approved)
 **Status**: Approved (Part 1)
 **Context**: Construction - Unit C - Code Generation Part 1 approved; dev loop run pending (user drives)
+
+## Code Generation (Unit C) - Completion
+**Timestamp**: 2026-10-25T18:30:00Z
+**User Input**: "Unit C is done. Onto unit D"
+**AI Response**: Verified dev loop commits ff9bd5d "feat: construct unit unit-c-install (agent dev loop)" (installer.py 259 ln, cli.py +32, test_installer 222, test_cli +39, test_installer_properties 65, pyproject += install, README +26) + d64cdb2 "Install unit docs". Both in main, in sync with origin. Unit C Code Generation marked [x]. Build and Test stays deferred to the global gate per standing user instruction. Proceeding to Unit D (skipped-stage visualisation, FR9).
+**Context**: Construction - Unit C complete; Unit D Functional Design begins
+
+## Functional Design (Unit D) - Stage Entry
+**Timestamp**: 2026-10-25T18:33:00Z
+**User Input**: (none - automatic after Unit C completion)
+**AI Response**: Unit D (skipped-stage visualisation, FR9) Functional Design started. Created aidlc-docs/construction/plans/unit-d-skipped-stage-functional-design-plan.md: 10 steps, Domain Exposition UED1-UED4, design questions UD1-UD6 (skip rule + transitivity, terminals, visual, edges, slice/round scoping, live-vs-verdict timing), frontend-components.md added to the artifact list (client UI unit).
+**Context**: Construction - Unit D - Functional Design
+
+## Functional Design (Unit D) - Answer UED1
+**Timestamp**: 2026-10-25T18:36:00Z
+**User Input**: "A"
+**AI Response**: Recorded UED1 = A: skip is derived state in the existing reducer, no new bounded context. Presented UED2 (state ownership of the skipped flag).
+**Context**: Construction - Unit D - Functional Design - Domain Exposition
+
+## Functional Design (Unit D) - Answer UED2
+**Timestamp**: 2026-10-25T18:40:00Z
+**User Input**: "A"
+**AI Response**: Recorded UED2 = A: skip is derived state in the pure applyEvent layer, stored per node instance, consumed by app.js. Presented UED3 (change-togetherness of inference, styling, rendering).
+**Context**: Construction - Unit D - Functional Design - Domain Exposition
+
+## Functional Design (Unit D) - Answer UED3
+**Timestamp**: 2026-10-25T18:46:00Z
+**User Input**: "B"
+**AI Response**: Recorded UED3 = B (after user asked "Recommendation?" and I recommended B: matches the existing pure-viz-core/app.js split; the seam is the state flag per UED2-A). Presented UED4 (actors and invariants of the inference).
+**Context**: Construction - Unit D - Functional Design - Domain Exposition
+
+## Functional Design (Unit D) - Answer UED4
+**Timestamp**: 2026-10-25T18:50:00Z
+**User Input**: "A"
+**AI Response**: Recorded UED4 = A: inference is a pure function of events + graph, deterministic, no DOM/clocks/network. Domain Exposition complete (UED1-UED4). Presented UD1 (the skip rule incl. transitivity).
+**Context**: Construction - Unit D - Functional Design - Domain Exposition complete
+
+## Functional Design (Unit D) - Answer UD1
+**Timestamp**: 2026-10-25T18:58:00Z
+**User Input**: "A" (after "I lean A - any objections?" and "Maybe B is better - why do these nodes need a special state anyway? Is it just an optimisation?")
+**AI Response**: Recorded UD1 = A: transitive closure (predecessor passed-or-skipped, no instance, successor arrived or run stopped; never propagates into a node with an instance). Explained to the user: the state is not an optimisation — it is FR9's disambiguation (unstyled = indistinguishable from pending); B leaves the ambiguity one hop down the chain; loop-backs make transitive bypass routine. Presented UD2 (terminals that never fired).
+**Context**: Construction - Unit D - Functional Design - Design questions
+
+## Functional Design (Unit D) - Answer UD2
+**Timestamp**: 2026-10-25T19:05:00Z
+**User Input**: "B" (after asking "Recommendation?" — I recommended B — and "How can a terminal be skipped?" — I answered: it can't; skip means flow moved past a stage, nothing is after a terminal; the skip inference excludes terminals entirely)
+**AI Response**: Recorded UD2 = B (strengthened): skip inference never considers terminal nodes. Presented UD3 (the skipped visual).
+**Context**: Construction - Unit D - Functional Design - Design questions
+
+## Functional Design (Unit D) - Answer UD3
+**Timestamp**: 2026-10-25T19:09:00Z
+**User Input**: "A"
+**AI Response**: Recorded UD3 = A: grey dashed node stroke, muted fill, readable text, status-skipped class alongside existing status classes. Presented UD4 (edges of skipped nodes).
+**Context**: Construction - Unit D - Functional Design - Design questions
+
+## Functional Design (Unit D) - Answer UD4
+**Timestamp**: 2026-10-25T19:13:00Z
+**User Input**: "A"
+**AI Response**: Recorded UD4 = A: node and its incoming/outgoing edges grey out. Presented UD5 (slice/round scoping).
+**Context**: Construction - Unit D - Functional Design - Design questions
+
+## Functional Design (Unit D) - Answer UD5
+**Timestamp**: 2026-10-25T19:17:00Z
+**User Input**: "A"
+**AI Response**: Recorded UD5 = A: inference per selected slice+round, re-derived on selector change, no new scoping. Presented UD6 (when skip appears — live vs verdict).
+**Context**: Construction - Unit D - Functional Design - Design questions
+
+## Functional Design (Unit D) - Answer UD6
+**Timestamp**: 2026-10-25T19:21:00Z
+**User Input**: "A"
+**AI Response**: Recorded UD6 = A: skip renders live the moment the trigger fires (successor arrived or run stopped). All questions answered (UED1-UED4, UD1-UD6). Answer analysis: all concrete; UD1/UD2 deliberation resolved (A transitive, B terminals excluded). No ambiguities. Proceeding to artifacts.
+**Context**: Construction - Unit D - Functional Design - all questions answered
+
+## Functional Design (Unit D) - Artifacts
+**Timestamp**: 2026-10-25T19:20:00Z
+**User Input**: (none - automatic after UD6)
+**AI Response**: Wrote all four artifacts to aidlc-docs/construction/unit-d-skipped-stage/functional-design/: domain-entities.md, business-logic-model.md, business-rules.md, frontend-components.md (SkipInference pure component, applyClasses extension, styles, Node-test coverage). Domain Validation Phase 2 passed (DOMAIN-04..08; descent: SkipInference = step 0 pure helper). Plan checkboxes Steps 1-8 [x].
+**Context**: Construction - Unit D - Functional Design - artifacts generated, awaiting approval
+
+## Functional Design (Unit D) - Approval
+**Timestamp**: 2026-10-25T19:24:00Z
+**AI Prompt**: Functional Design completion message for Unit D (artifacts at aidlc-docs/construction/unit-d-skipped-stage/functional-design/)
+**User Response**: "approve and continue / This is a simple visual change - only ask about NFRs and NFD if there is real ambiguity / No need for pedantry or yak-shaving"
+**Status**: Approved
+**Context**: Construction - Unit D - Functional Design approved. User directive recorded: for Unit D's NFR Requirements and NFR Design, ask questions only where there is real ambiguity; no pedantry, no yak-shaving. Proceeding to NFR Requirements.
+
+## NFR Requirements (Unit D) - Artifacts
+**Timestamp**: 2026-10-25T19:28:00Z
+**User Input**: (none - stage execution under user directive: ask only on real ambiguity)
+**AI Response**: Per the user's no-pedantry directive, evaluated all eight NFR categories; found no real ambiguity; recorded stated decisions instead of questions (plan aidlc-docs/construction/plans/unit-d-skipped-stage-nfr-requirements-plan.md). Wrote artifacts nfr-requirements.md + tech-stack-decisions.md (4 decisions: no new runtime dep, no new dev dep, no Python changes, existing styling mechanism). PBT coverage: exhaustive Node assertions satisfy PBT-02/03/07/08; PBT-09 N/A (no Python).
+**Context**: Construction - Unit D - NFR Requirements - awaiting approval
+
+## NFR Requirements (Unit D) - Approval
+**Timestamp**: 2026-10-25T19:32:00Z
+**AI Prompt**: NFR Requirements completion message for Unit D
+**User Response**: "approve and continue, same as before, no yak-shaving"
+**Status**: Approved
+**Context**: Construction - Unit D - NFR Requirements approved; directive extended to NFR Design (stated decisions, ask only on real ambiguity). Proceeding to NFR Design.
+
+## NFR Design (Unit D) - Artifacts
+**Timestamp**: 2026-10-25T19:36:00Z
+**User Input**: (none - stage execution under user directive: stated decisions, no yak-shaving)
+**AI Response**: Wrote NFR Design artifacts for Unit D: nfr-design-patterns.md (resilience N/A client-side with try/catch containment, scalability N/A, bounded fixpoint performance, no security surface) + logical-components.md (4 client components, no infra/external/deps). Plan unit-d-skipped-stage-nfr-design-plan.md with stated category decisions. Six project-wide resiliency decisions not re-asked.
+**Context**: Construction - Unit D - NFR Design - awaiting approval
+
+## NFR Design (Unit D) - Approval
+**Timestamp**: 2026-10-25T19:40:00Z
+**AI Prompt**: NFR Design completion message for Unit D
+**User Response**: "approve"
+**Status**: Approved
+**Context**: Construction - Unit D - NFR Design approved; proceeding to Code Generation
+
+## Code Generation (Unit D) - Plan
+**Timestamp**: 2026-10-25T19:44:00Z
+**User Input**: (none - stage entry)
+**AI Response**: Wrote aidlc-docs/construction/plans/unit-d-skipped-stage-d-code-generation-plan.md (8 steps, TDD red-first: Node test cases → inferSkipped → applyClasses extension → styles → verify → README → N/A layers → summary). Client-only unit, zero Python changes.
+**Context**: Construction - Unit D - Code Generation - Part 1 planning, awaiting plan approval + execution vehicle
+
+## Code Generation (Unit D) - Approval
+**Timestamp**: 2026-10-25T19:48:00Z
+**AI Prompt**: Q1 plan approval (A/B) + Q2 execution vehicle (A inline / B dev loop)
+**User Response**: "1. A / 2. B - triggered by me"
+**Status**: Approved (plan A; vehicle B - user-triggered agentic-dev-loop)
+**Context**: Construction - Unit D - Code Generation Part 1 approved; dev loop armed, awaiting user run

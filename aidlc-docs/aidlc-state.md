@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-24T20:20:00Z
-- **Current Stage**: CONSTRUCTION - Unit unit-c-install - Code Generation (Part 1 approved; dev loop run pending)
+- **Current Stage**: CONSTRUCTION - Unit unit-d-skipped-stage - Code Generation (Part 1 approved; dev loop run pending)
 
 ## Execution Plan Summary
 - **Total Stages**: 9 to execute (Application Design, Units Generation, Functional Design,
@@ -67,7 +67,7 @@ Plan artifacts: aidlc-docs/inception/application-design/{unit-of-work,unit-of-wo
 - [x] Unit C: install — NFR Requirements (approved 2026-10-25T17:44:00Z)
 - [x] Unit C: install — NFR Design (approved 2026-10-25T18:05:00Z)
 - [x] Unit C: install — Infrastructure Design (SKIP - desktop pipx tool)
-- [ ] Unit C: install — Code Generation
+- [x] Unit C: install — Code Generation (dev loop ff9bd5d+d64cdb2, 2026-10-25T18:30:00Z)
 - [ ] Unit D: skipped-stage visualisation (FR9) — Functional Design
 - [ ] Unit D: skipped-stage visualisation (FR9) — NFR Requirements
 - [ ] Unit D: skipped-stage visualisation (FR9) — NFR Design

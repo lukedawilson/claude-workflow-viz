@@ -122,9 +122,12 @@ class UnsupportedParallel(ParseFailure):
         )
 
 
+VIZ_DIR_PLACEHOLDER = "{viz_dir}"
+
+
 VIZ_COMMAND_TEMPLATE = """Generate a hand-authored `.viz.yaml` graph config for a workflow whose
 static parse failed. Read the workflow source at the path given in the task, then write a
-`<workflow>.viz.yaml` that `Graph.load` accepts with zero errors.
+`<workflow>.viz.yaml` into the `{viz_dir}` directory that `Graph.load` accepts with zero errors.
 
 The supported schema (same keys as a hand-authored file):
 
@@ -239,6 +242,7 @@ __all__ = [
     "UnsupportedParallel",
     "ParseFailureReport",
     "VIZ_COMMAND_TEMPLATE",
+    "VIZ_DIR_PLACEHOLDER",
     "append_debug_log",
     "DEBUG_LOG_NAME",
     "DEBUG_LOG_MAX_BYTES",

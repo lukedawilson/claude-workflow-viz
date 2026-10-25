@@ -26,6 +26,7 @@ packages = [
     "src/claude_workflow_viz.graph_source",
     "src/claude_workflow_viz.dashboard",
     "src/claude_workflow_viz.invoke",
+    "src/claude_workflow_viz.install",
 ]
 
 [tool.pytest.ini_options]

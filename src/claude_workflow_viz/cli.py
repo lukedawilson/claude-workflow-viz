@@ -1,11 +1,13 @@
-"""Command line entry point dispatching to the `serve` and `hook` subcommands."""
+"""Command line entry point dispatching to the `serve`, `hook` and `install` subcommands."""
 
 import argparse
 import sys
 from collections.abc import Callable, Sequence
+from pathlib import Path
 
 from claude_workflow_viz.dashboard.server import serve
 from claude_workflow_viz.graph.graph import Graph, GraphError
+from claude_workflow_viz.install.installer import DEFAULT_VIZ_DIR, Installer, InstallError
 from claude_workflow_viz.workflow.hook_command import run_hook
 
 
@@ -24,12 +26,24 @@ def _hook(_arguments: argparse.Namespace) -> int:
     return run_hook()
 
 
+def _install(arguments: argparse.Namespace) -> int:
+    try:
+        summary = Installer().run(Path.cwd(), Path(arguments.viz_dir), arguments.force)
+    except (InstallError, OSError) as error:
+        print(f"claude-workflow-viz: {error}", file=sys.stderr)
+        return 1
+    print(summary.render())
+    return 0
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="claude-workflow-viz",
         description="Live Mermaid flowchart of a Claude Code Workflow run.",
     )
-    subcommands = parser.add_subparsers(dest="command", required=True, metavar="{serve,hook}")
+    subcommands = parser.add_subparsers(
+        dest="command", required=True, metavar="{serve,hook,install}"
+    )
     serve_parser = subcommands.add_parser("serve", help="run the local server and web UI")
     serve_parser.add_argument(
         "--port",
@@ -45,6 +59,20 @@ def _build_parser() -> argparse.ArgumentParser:
     serve_parser.set_defaults(handler=_serve)
     hook = subcommands.add_parser("hook", help="handle a Claude Code hook event from stdin")
     hook.set_defaults(handler=_hook)
+    install = subcommands.add_parser(
+        "install", help="wire this repo: verify, register hooks, create the /viz command"
+    )
+    install.add_argument(
+        "--viz-dir",
+        default=str(DEFAULT_VIZ_DIR),
+        help="directory for agent-generated viz.yaml files (default .claude-local/viz)",
+    )
+    install.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite an existing .claude/commands/viz.md",
+    )
+    install.set_defaults(handler=_install)
     return parser
 
 

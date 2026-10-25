@@ -61,6 +61,7 @@ claude-workflow-viz --help
 | --- | --- |
 | `claude-workflow-viz serve [--port N] [--graph FILE]` | Run the local server (127.0.0.1 only) and the web UI. |
 | `claude-workflow-viz hook` | Receive a Claude Code hook event on stdin and forward it to the server. |
+| `claude-workflow-viz install [--viz-dir PATH] [--force]` | Wire a repo: verify, register the five hooks, create the `/viz` command. |
 
 **1. Start the visualiser.**
 
@@ -92,7 +93,8 @@ written by a newer server is left in place. A missing, unreadable or malformed f
 server is running, and `hook` quietly does nothing.
 
 **2. Register the hooks** in the repo where the workflow runs
-(`.claude/settings.local.json`):
+(`.claude/settings.local.json`). The `install` subcommand writes these for you
+(see "Installer" below); this JSON is the contract it writes:
 
 ```json
 {
@@ -132,6 +134,28 @@ payload from stdin, forwards it, and exits 0 no matter what.
    verdicts fall back to the step's reported status.
 5. **Routes fire.** Pass and fail edges highlight, retries re-open nodes, and
    exhausting `max_rounds` routes to the `on_rounds_exhausted` terminal.
+
+### Installer
+
+`claude-workflow-viz install` wires a repo in one command:
+
+```sh
+claude-workflow-viz install [--viz-dir <path>] [--force]
+```
+
+It first verifies the tool by running `claude-workflow-viz hook` once with empty stdin.
+Then it writes the five hook registrations into `.claude/settings.local.json`.
+The registrations are the four hooks shown above plus `SessionEnd`.
+It also creates `.claude/commands/viz.md`, the `/viz` command the agent fallback runs.
+Existing unrelated hooks are preserved, and an already-wired repo is left byte-for-byte unchanged.
+Re-running is safe: the second install re-verifies and reprints the summary but writes nothing.
+
+- `--viz-dir <path>` picks the directory for agent-generated `.viz.yaml` files.
+  The default is `.claude-local/viz/`. The choice is recorded in the `/viz` command file.
+- `--force` overwrites an existing `.claude/commands/viz.md`; without it the command is skipped.
+
+On the next workflow run the `PreToolUse` hook bootstraps the visualiser, as described in
+"Invoke-time bootstrap".
 
 ### Invoke-time bootstrap
 
