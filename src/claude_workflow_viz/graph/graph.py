@@ -200,6 +200,10 @@ class Graph:
     on_rounds_exhausted: str | None = None
     step_pattern: str = DEFAULT_STEP_PATTERN
 
+    def __post_init__(self) -> None:
+        if self.max_rounds is not None and self.on_rounds_exhausted is None:
+            raise ValueError("Graph field on_rounds_exhausted is required when max_rounds is set")
+
     def node_for(self, stage_or_step_key: str) -> str | None:
         for node in self.nodes:
             if stage_or_step_key in (node.stage, node.step_key):
@@ -215,6 +219,37 @@ class Graph:
             "step_pattern": self.step_pattern,
             "nodes": [node.to_dict() for node in self.nodes],
         }
+
+    def to_yaml(self) -> str:
+        """Serialize this graph to the hand-authored viz.yaml schema, losslessly round-tripping.
+
+        Only set fields are emitted, matching how a human writes the file: `max_rounds` carries
+        `on_rounds_exhausted` with it, the default `step_pattern` is omitted, and a node omits
+        `stage`, `step_key`, `terminal`, `on_fail` when unset. The output is a `yaml.safe_dump`
+        that `Graph.load` reads back into an equal `Graph` (D5, DOMAIN-08).
+        """
+        document: dict[str, Any] = {"name": self.name, "entry": self.entry}
+        if self.max_rounds is not None:
+            document["max_rounds"] = self.max_rounds
+            if self.on_rounds_exhausted is not None:
+                document["on_rounds_exhausted"] = self.on_rounds_exhausted
+        if self.step_pattern != DEFAULT_STEP_PATTERN:
+            document["step_pattern"] = self.step_pattern
+        document["nodes"] = [
+            _omit_unset(
+                {
+                    "id": node.id,
+                    "label": node.label,
+                    "stage": node.stage,
+                    "step_key": node.step_key,
+                    "terminal": node.terminal,
+                    "on_pass": node.on_pass,
+                    "on_fail": node.on_fail,
+                }
+            )
+            for node in self.nodes
+        ]
+        return yaml.safe_dump(document, sort_keys=False, allow_unicode=True)
 
     @classmethod
     def load(cls, path: str | Path) -> "GraphResult":
@@ -459,3 +494,12 @@ def _reject_unknown(source: Mapping[str, Any], allowed: set[str], where: str) ->
     if unknown:
         return GraphError(GraphErrorCode.UNKNOWN_KEY, f"{where} has unknown key {unknown[0]!r}")
     return None
+
+
+def _omit_unset(mapping: dict[str, Any]) -> dict[str, Any]:
+    """Drop keys a human would not write: `None` values and a false `terminal` flag."""
+    return {
+        key: value
+        for key, value in mapping.items()
+        if value is not None and not (key == "terminal" and value is False)
+    }

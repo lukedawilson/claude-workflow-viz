@@ -21,3 +21,4 @@ agentic-dev-loop/.pr/
 .opencode/package.json
 .opencode/package-lock.json
 .opencode/bun.lock
+.hypothesis/

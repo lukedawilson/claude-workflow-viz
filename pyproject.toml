@@ -16,13 +16,14 @@ dependencies = [
 claude-workflow-viz = "claude_workflow_viz.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "ruff>=0.6", "hypothesis>=6.100"]
 
 [tool.hatch.build.targets.wheel]
 packages = [
     "src/claude_workflow_viz",
     "src/claude_workflow_viz.workflow",
     "src/claude_workflow_viz.graph",
+    "src/claude_workflow_viz.graph_source",
     "src/claude_workflow_viz.dashboard",
 ]
 
