@@ -1,0 +1,223 @@
+[
+  {
+    "session_id": "demo",
+    "ts": 0.5,
+    "kind": "run_start",
+    "run_id": "demo",
+    "summary": "workflow implement invoked"
+  },
+  {
+    "session_id": "demo",
+    "ts": 1.0,
+    "kind": "step_start",
+    "step_key": "pre-flight/head-check",
+    "status": "running",
+    "summary": "checking base sha",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 2.0,
+    "kind": "step_stop",
+    "step_key": "pre-flight/head-check",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "sha": "demo"
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 3.0,
+    "kind": "step_start",
+    "step_key": "planner",
+    "status": "running",
+    "summary": "planning the slices",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 4.0,
+    "kind": "step_stop",
+    "step_key": "planner",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "status": "PLANNED",
+      "slices": [
+        {
+          "id": "s1"
+        }
+      ]
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 5.0,
+    "kind": "step_start",
+    "step_key": "gate-baseline",
+    "status": "running",
+    "summary": "baseline checks",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 6.0,
+    "kind": "step_stop",
+    "step_key": "gate-baseline",
+    "status": "pass",
+    "summary": "",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 7.0,
+    "kind": "step_start",
+    "step_key": "s1/develop:r1",
+    "status": "running",
+    "summary": "implementing slice s1",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 8.0,
+    "kind": "step_stop",
+    "step_key": "s1/develop:r1",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "status": "DONE"
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 9.0,
+    "kind": "step_start",
+    "step_key": "s1/gate:r1",
+    "status": "running",
+    "summary": "checking the gate",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 10.0,
+    "kind": "step_stop",
+    "step_key": "s1/gate:r1",
+    "status": "fail",
+    "summary": "",
+    "result": {
+      "status": "red",
+      "failureSummary": "one test red"
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 11.0,
+    "kind": "step_start",
+    "step_key": "s1/develop:r2",
+    "status": "running",
+    "summary": "fixing the failing test",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 12.0,
+    "kind": "step_stop",
+    "step_key": "s1/develop:r2",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "status": "DONE"
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 13.0,
+    "kind": "step_start",
+    "step_key": "s1/gate:r2",
+    "status": "running",
+    "summary": "checking the gate",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 14.0,
+    "kind": "step_stop",
+    "step_key": "s1/gate:r2",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "status": "green"
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 15.0,
+    "kind": "step_start",
+    "step_key": "s1/review:r2",
+    "status": "running",
+    "summary": "reviewing the change",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 16.0,
+    "kind": "step_stop",
+    "step_key": "s1/review:r2",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "verdict": "APPROVED"
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 17.0,
+    "kind": "step_start",
+    "step_key": "s1/code-review:r2",
+    "status": "running",
+    "summary": "hunting for bugs",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 18.0,
+    "kind": "step_stop",
+    "step_key": "s1/code-review:r2",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "ran": true,
+      "blocking": false
+    },
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 19.0,
+    "kind": "step_start",
+    "step_key": "s1/classify:r2",
+    "status": "running",
+    "summary": "classifying the change",
+    "run_id": "demo"
+  },
+  {
+    "session_id": "demo",
+    "ts": 20.0,
+    "kind": "step_stop",
+    "step_key": "s1/classify:r2",
+    "status": "pass",
+    "summary": "",
+    "result": {
+      "touchesConcurrency": false
+    },
+    "run_id": "demo"
+  }
+]

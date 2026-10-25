@@ -319,3 +319,17 @@ export async function loop(input) {
     edges = {node.id: (node.on_pass, node.on_fail) for node in result.nodes}
     assert edges["develop"] == ("done", "develop")
     assert result.on_rounds_exhausted == "blocked"
+
+
+def test_parser_output_matches_checked_in_demo_graph_fixture():
+    """The Node demo-progression test replays events against
+    tests/fixtures/implement-graph.json; keep it in lockstep with the parser."""
+    import json
+
+    from pathlib import Path
+
+    fixture = Path(__file__).parent / "fixtures" / "implement-graph.json"
+    source_path = Path("tests/fixtures/workflows/implement.js")
+    graph = WorkflowSource(source_path.read_text(), source_path).parse()
+    assert isinstance(graph, Graph)
+    assert graph.to_dict() == json.loads(fixture.read_text())

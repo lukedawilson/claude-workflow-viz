@@ -1,0 +1,117 @@
+{
+  "name": "implement",
+  "entry": "pre-flight",
+  "max_rounds": 3,
+  "on_rounds_exhausted": "blocked",
+  "step_pattern": "(?P<slice>[^/]+)/(?P<stage>[^:]+):r(?P<round>\\d+)",
+  "nodes": [
+    {
+      "id": "pre-flight",
+      "label": "Pre Flight",
+      "stage": null,
+      "step_key": "pre-flight/head-check",
+      "terminal": false,
+      "on_pass": "planner",
+      "on_fail": "blocked"
+    },
+    {
+      "id": "planner",
+      "label": "Planner",
+      "stage": null,
+      "step_key": "planner",
+      "terminal": false,
+      "on_pass": "gate-baseline",
+      "on_fail": "needs-context"
+    },
+    {
+      "id": "gate-baseline",
+      "label": "Gate Baseline",
+      "stage": null,
+      "step_key": "gate-baseline",
+      "terminal": false,
+      "on_pass": "develop",
+      "on_fail": "blocked"
+    },
+    {
+      "id": "develop",
+      "label": "Develop",
+      "stage": "develop",
+      "step_key": null,
+      "terminal": false,
+      "on_pass": "gate",
+      "on_fail": "needs-context"
+    },
+    {
+      "id": "gate",
+      "label": "Gate",
+      "stage": "gate",
+      "step_key": null,
+      "terminal": false,
+      "on_pass": "review",
+      "on_fail": "develop"
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "stage": "review",
+      "step_key": null,
+      "terminal": false,
+      "on_pass": "code-review",
+      "on_fail": "develop"
+    },
+    {
+      "id": "code-review",
+      "label": "Code Review",
+      "stage": "code-review",
+      "step_key": null,
+      "terminal": false,
+      "on_pass": "classify",
+      "on_fail": "develop"
+    },
+    {
+      "id": "classify",
+      "label": "Classify",
+      "stage": "classify",
+      "step_key": null,
+      "terminal": false,
+      "on_pass": "verify-fsm",
+      "on_fail": null
+    },
+    {
+      "id": "verify-fsm",
+      "label": "Verify Fsm",
+      "stage": "verify-fsm",
+      "step_key": null,
+      "terminal": false,
+      "on_pass": "done",
+      "on_fail": "develop"
+    },
+    {
+      "id": "blocked",
+      "label": "Blocked",
+      "stage": null,
+      "step_key": null,
+      "terminal": true,
+      "on_pass": null,
+      "on_fail": null
+    },
+    {
+      "id": "done",
+      "label": "Done",
+      "stage": null,
+      "step_key": null,
+      "terminal": true,
+      "on_pass": null,
+      "on_fail": null
+    },
+    {
+      "id": "needs-context",
+      "label": "Needs Context",
+      "stage": null,
+      "step_key": null,
+      "terminal": true,
+      "on_pass": null,
+      "on_fail": null
+    }
+  ]
+}
