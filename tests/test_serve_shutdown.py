@@ -1,4 +1,5 @@
 import http.client
+import json
 import os
 import signal
 import subprocess
@@ -29,8 +30,16 @@ def _start_serve(state_dir):
             process.wait()
             pytest.fail("serve did not write the connection file")
         time.sleep(0.05)
-    connection = Connection.read()
-    assert connection is not None
+    try:
+        # Read the file the subprocess wrote: the test process has no
+        # CLAUDE_WORKFLOW_VIZ_STATE_DIR env, so Connection.read() would look
+        # in the default state directory and find nothing.
+        data = json.loads(path.read_text(encoding="utf-8"))
+        connection = Connection(port=data["port"], token=data["token"])
+    except (OSError, ValueError, KeyError):
+        process.kill()
+        process.wait()
+        pytest.fail("serve wrote an unreadable connection file")
     return process, path, connection
 
 

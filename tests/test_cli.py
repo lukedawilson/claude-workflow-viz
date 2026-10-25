@@ -126,5 +126,5 @@ def test_install_force_and_viz_dir_flags(tmp_path, monkeypatch, capsys):
     output = capsys.readouterr().out
     assert "command: forced" in output
     command = (tmp_path / ".claude" / "commands" / "viz.md").read_text(encoding="utf-8")
-    assert "custom/viz" in command
+    assert str(Path("custom") / "viz") in command
     assert "old" not in command

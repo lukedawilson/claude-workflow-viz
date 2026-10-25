@@ -224,5 +224,5 @@ def test_force_overwrites_an_existing_command(tmp_path, on_real_path):
 def test_viz_dir_flag_is_recorded_in_the_command_and_summary(tmp_path, on_real_path):
     summary = Installer().run(tmp_path, Path("custom/viz"), False)
 
-    assert summary.viz_dir == "custom/viz"
-    assert "custom/viz" in _command_path(tmp_path).read_text(encoding="utf-8")
+    assert summary.viz_dir == str(Path("custom") / "viz")
+    assert str(Path("custom") / "viz") in _command_path(tmp_path).read_text(encoding="utf-8")
