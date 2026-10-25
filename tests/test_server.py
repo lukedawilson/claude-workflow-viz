@@ -9,7 +9,6 @@ from pathlib import Path
 import pytest
 
 from _platform import assert_private_mode
-
 from claude_workflow_viz.dashboard.connection_file import Connection
 from claude_workflow_viz.dashboard.server import MAXIMUM_BODY_BYTES, start_server
 

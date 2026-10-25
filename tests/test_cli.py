@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 
 from _platform import path_with_console_scripts
-
 from claude_workflow_viz.cli import main
 
 
@@ -65,7 +64,6 @@ def test_serve_prints_ui_url_with_token_and_exposes_graph(tmp_path, monkeypatch)
     import re
     import threading
     import time
-    from pathlib import Path
 
     from claude_workflow_viz.dashboard import server as server_module
 

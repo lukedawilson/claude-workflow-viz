@@ -8,8 +8,8 @@ the test bodies.
 
 import os
 import stat
-from pathlib import Path
 import sys
+from pathlib import Path
 
 POSIX = os.name != "nt"
 

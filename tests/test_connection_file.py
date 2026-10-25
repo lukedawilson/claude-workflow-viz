@@ -4,7 +4,6 @@ import os
 import pytest
 
 from _platform import assert_private_mode
-
 from claude_workflow_viz.dashboard.connection_file import (
     Connection,
     ensure_state_directory,

@@ -8,7 +8,7 @@ silently missing node in the dashboard. This test makes that failure loud.
 import json
 from pathlib import Path
 
-from claude_workflow_viz.workflow.events import Event, EventResult
+from claude_workflow_viz.workflow.events import Event
 
 
 def test_every_demo_progression_event_passes_event_from_dict() -> None:

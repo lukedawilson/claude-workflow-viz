@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 from _platform import assert_private_mode
-
 from claude_workflow_viz.dashboard.connection_file import Connection
 from claude_workflow_viz.dashboard.server import start_server
 from claude_workflow_viz.invoke.bootstrap import Bootstrap

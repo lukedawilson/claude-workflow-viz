@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from _platform import assert_private_mode, path_with_console_scripts
 from claude_workflow_viz.install.installer import (
     DEFAULT_VIZ_DIR,
     FIVE_REGISTRATIONS,
@@ -22,8 +23,6 @@ from claude_workflow_viz.install.installer import (
     Installer,
     InstallError,
 )
-
-from _platform import assert_private_mode, path_with_console_scripts
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
