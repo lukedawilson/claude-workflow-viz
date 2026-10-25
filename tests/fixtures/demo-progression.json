@@ -4,7 +4,9 @@
     "ts": 0.5,
     "kind": "run_start",
     "run_id": "demo",
-    "summary": "workflow implement invoked"
+    "summary": "workflow implement invoked",
+    "step_key": "workflow",
+    "status": "running"
   },
   {
     "session_id": "demo",
@@ -226,7 +228,8 @@
     "kind": "step_start",
     "step_key": "done",
     "status": "running",
-    "run_id": "demo"
+    "run_id": "demo",
+    "summary": "completing the run"
   },
   {
     "session_id": "demo",
@@ -234,6 +237,7 @@
     "kind": "step_stop",
     "step_key": "done",
     "status": "pass",
-    "run_id": "demo"
+    "run_id": "demo",
+    "summary": ""
   }
 ]
