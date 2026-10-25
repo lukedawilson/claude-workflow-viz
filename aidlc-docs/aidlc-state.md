@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-10-24T20:20:00Z
-- **Current Stage**: CONSTRUCTION - Unit unit-b-hook-path - Code Generation (Part 1 approved; dev loop run pending)
+- **Current Stage**: CONSTRUCTION - Unit unit-c-install - Code Generation (Part 1 approved; dev loop run pending)
 
 ## Execution Plan Summary
 - **Total Stages**: 9 to execute (Application Design, Units Generation, Functional Design,
@@ -62,10 +62,10 @@ Plan artifacts: aidlc-docs/inception/application-design/{unit-of-work,unit-of-wo
 - [x] Unit B: hook path / server lifecycle — NFR Requirements (approved 2026-10-25T14:50:00Z)
 - [x] Unit B: hook path / server lifecycle — NFR Design (approved 2026-10-25T15:26:00Z)
 - [x] Unit B: hook path / server lifecycle — Infrastructure Design (SKIP - desktop pipx tool)
-- [ ] Unit B: hook path / server lifecycle — Code Generation
-- [ ] Unit C: install — Functional Design
-- [ ] Unit C: install — NFR Requirements
-- [ ] Unit C: install — NFR Design
+- [x] Unit B: hook path / server lifecycle — Code Generation (approved 2026-10-25T16:15:00Z; commits 1b3cb2a/1b5d463/5b46291)
+- [x] Unit C: install — Functional Design (approved 2026-10-25T17:12:00Z)
+- [x] Unit C: install — NFR Requirements (approved 2026-10-25T17:44:00Z)
+- [x] Unit C: install — NFR Design (approved 2026-10-25T18:05:00Z)
 - [x] Unit C: install — Infrastructure Design (SKIP - desktop pipx tool)
 - [ ] Unit C: install — Code Generation
 - [ ] Unit D: skipped-stage visualisation (FR9) — Functional Design

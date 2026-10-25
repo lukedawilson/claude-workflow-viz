@@ -751,3 +751,188 @@ Q5 - A"
 **User Input**: "A" (option A of the demo-extension choice: full implement progression + env-configurable hold before shutdown)
 **AI Response**: Rewrote run-demo.sh's simulation: posts the full implement progression (pre-flight → planner → gate-baseline → s1/develop:r1 → s1/gate:r1 fail → s1/develop:r2 retry → s1/gate:r2 pass → review APPROVED → code-review → classify → verify-fsm PASS), prints the dashboard URL before the simulation, holds DEMO_HOLD_SECONDS (default 8, 0 skips) before POST /shutdown. Verified: DEMO_HOLD_SECONDS=1 run → 22 events ingested, shutdown 204, exit 0.
 **Context**: Construction - Unit B - demo script improvement, user-approved inline
+
+## Code Generation (Unit B) - Approval
+**Timestamp**: 2026-10-25T16:15:00Z
+**AI Prompt**: Code Generation completion message for Unit B (commits 1b3cb2a + 1b5d463 + 5b46291; suite 578 Python / 91 Node green)
+**User Response**: "approve and continue"
+**Status**: Approved
+**Context**: Construction - Unit B Code Generation approved; proceeding to Unit C (install)
+
+## Functional Design (Unit C) - Stage Entry
+**Timestamp**: 2026-10-25T16:20:00Z
+**User Input**: (none - automatic stage progression after Unit B Code Generation approval)
+**AI Response**: Unit C (install) Functional Design started. Created aidlc-docs/construction/plans/unit-c-install-functional-design-plan.md with 10 steps, Domain Exposition questions UEC1-UEC4, design questions UC1-UC7, PBT-01 candidates. Source context: unit-of-work.md Unit C section, application design artifacts, FR1/FR2/FR5/FR7/FR8, Q4/Q5/D6/D8/D9. Verified Unit A delivered VIZ_COMMAND_TEMPLATE (line 125 of graph_source/parse_failures.py) + build_fallback_prompt(); Unit C deploys the template.
+**Context**: Construction - Unit C - Functional Design
+
+## Functional Design (Unit C) - Answer UEC1
+**Timestamp**: 2026-10-25T16:22:00Z
+**User Input**: "A"
+**AI Response**: Recorded UEC1 = A in the plan: one bounded context — installer + cli install subcommand + template deployment co-evolve (FR1/FR2/Q4/D9). Presented UEC2 (state ownership of the viz-dir choice).
+**Context**: Construction - Unit C - Functional Design - Domain Exposition
+
+## Functional Design (Unit C) - Answer UEC2
+**Timestamp**: 2026-10-25T16:26:00Z
+**User Input**: "A"
+**AI Response**: Recorded UEC2 = A in the plan: the viz-dir choice is rendered into .claude/commands/viz.md at install time; no other record exists. Presented UEC3 (change-togetherness of installer and template deployment).
+**Context**: Construction - Unit C - Functional Design - Domain Exposition
+
+## Functional Design (Unit C) - Answer UEC3
+**Timestamp**: 2026-10-25T16:30:00Z
+**User Input**: "A"
+**AI Response**: Recorded UEC3 = A in the plan: deployment changes together with the installer — the installer owns all repo writes (FR1); template content imported as a value, deployment is installer behaviour. Presented UEC4 (runtime contexts and actors).
+**Context**: Construction - Unit C - Functional Design - Domain Exposition
+
+## Functional Design (Unit C) - Answer UEC4
+**Timestamp**: 2026-10-25T16:34:00Z
+**User Input**: "A"
+**AI Response**: Recorded UEC4 = A in the plan: one runtime context — human at a terminal in the target repo, no hook-path involvement, no daemon. Domain Exposition complete (UEC1-UEC4 all A). Proceeding to design questions; presented UC1 (viz-dir choice mechanism).
+**Context**: Construction - Unit C - Functional Design - Domain Exposition complete
+
+## Functional Design (Unit C) - Answer UC1
+**Timestamp**: 2026-10-25T16:38:00Z
+**User Input**: "B"
+**AI Response**: Recorded UC1 = B in the plan: --viz-dir flag; if omitted, default .claude-local/viz/ with no prompt. Presented UC2 (settings.local.json merge semantics).
+**Context**: Construction - Unit C - Functional Design - Design questions
+
+## Functional Design (Unit C) - Answer UC2
+**Timestamp**: 2026-10-25T16:42:00Z
+**User Input**: "C"
+**AI Response**: Recorded UC2 = C in the plan (after user asked "Recommendation?" and I recommended C: FR1 contract preserve-existing/add-missing, zero writes on second install, no formatting churn). Presented UC3 (verification scope).
+**Context**: Construction - Unit C - Functional Design - Design questions
+
+## Functional Design (Unit C) - Answer UC3
+**Timestamp**: 2026-10-25T16:46:00Z
+**User Input**: "B"
+**AI Response**: Recorded UC3 = B in the plan: verify = empty-stdin hook exit 0 + resolve which PATH binary provides the command and print its path. Presented UC4 (pre-existing /viz command handling).
+**Context**: Construction - Unit C - Functional Design - Design questions
+
+## Functional Design (Unit C) - Answer UC4
+**Timestamp**: 2026-10-25T16:50:00Z
+**User Input**: "A"
+**AI Response**: Recorded UC4 = A in the plan: skip writing if the /viz command exists; --force overwrites; summary says which. Presented UC5 (install failure behaviour).
+**Context**: Construction - Unit C - Functional Design - Design questions
+
+## Functional Design (Unit C) - Answer UC5
+**Timestamp**: 2026-10-25T16:54:00Z
+**User Input**: "B"
+**AI Response**: Recorded UC5 = B in the plan: create missing .claude/.claude/commands silently; hard stops = invalid settings.local.json + verification failure (loud, nothing partial). Presented UC6 (install summary output).
+**Context**: Construction - Unit C - Functional Design - Design questions
+
+## Functional Design (Unit C) - Answer UC6
+**Timestamp**: 2026-10-25T16:58:00Z
+**User Input**: "A"
+**AI Response**: Recorded UC6 = A in the plan: summary = one line per action taken plus what-happens-next. Presented UC7 (idempotency definition).
+**Context**: Construction - Unit C - Functional Design - Design questions
+
+## Functional Design (Unit C) - Answer UC7
+**Timestamp**: 2026-10-25T17:02:00Z
+**User Input**: "B"
+**AI Response**: Recorded UC7 = B in the plan: second install may re-verify and re-print but performs no writes (consistent with UC2=C). All questions answered (UEC1-UEC4, UC1-UC7). Answer analysis: all concrete, no ambiguities, no follow-ups needed. Proceeding to artifacts.
+**Context**: Construction - Unit C - Functional Design - Design questions complete
+
+## Functional Design (Unit C) - Artifacts
+**Timestamp**: 2026-10-25T17:08:00Z
+**User Input**: (none - automatic after UC7)
+**AI Response**: Wrote three artifacts to aidlc-docs/construction/unit-c-install/functional-design/: domain-entities.md (Installer application service, InstallSummary/HookRegistration/VizCommand/VizDirChoice value objects, cli entry point, relationships), business-logic-model.md (Flow 1 install, Flow 2 idempotent re-install, failure inventory), business-rules.md (R1-R14 each citing sources). Domain Validation Phase 2 passed (DOMAIN-04..08, descent audit recorded in plan). Plan checkboxes Steps 1-8 [x].
+**Context**: Construction - Unit C - Functional Design - artifacts generated, awaiting approval
+
+## Functional Design (Unit C) - Approval
+**Timestamp**: 2026-10-25T17:12:00Z
+**AI Prompt**: Functional Design completion message for Unit C (artifacts at aidlc-docs/construction/unit-c-install/functional-design/)
+**User Response**: "approved"
+**Status**: Approved
+**Context**: Construction - Unit C - Functional Design approved; proceeding to NFR Requirements
+
+## NFR Requirements (Unit C) - Stage Entry
+**Timestamp**: 2026-10-25T17:15:00Z
+**User Input**: (none - automatic after FD approval)
+**AI Response**: Created aidlc-docs/construction/plans/unit-c-install-nfr-requirements-plan.md: category applicability table (scalability/availability no; performance confirm; security/tech-stack/reliability/maintainability/usability yes) + questions NFRC1-NFRC4 (atomic writes, verify subprocess output, fresh-file permissions, same-event-different-registration edge — the last one raised from FD merge semantics as a detected ambiguity).
+**Context**: Construction - Unit C - NFR Requirements
+
+## NFR Requirements (Unit C) - Answer NFRC1
+**Timestamp**: 2026-10-25T17:18:00Z
+**User Input**: "A"
+**AI Response**: Recorded NFRC1 = A: both writes atomic (temp file in same dir + os.replace). Presented NFRC2 (verify subprocess output).
+**Context**: Construction - Unit C - NFR Requirements
+
+## NFR Requirements (Unit C) - Answer NFRC2
+**Timestamp**: 2026-10-25T17:22:00Z
+**User Input**: "A"
+**AI Response**: Recorded NFRC2 = A: capture verify stdout/stderr, include in the loud failure message. Presented NFRC3 (fresh settings.local.json permissions).
+**Context**: Construction - Unit C - NFR Requirements
+
+## NFR Requirements (Unit C) - Answer NFRC3
+**Timestamp**: 2026-10-25T17:26:00Z
+**User Input**: "A"
+**AI Response**: Recorded NFRC3 = A: fresh settings.local.json created 0600. Presented NFRC4 (same hook event, different registration).
+**Context**: Construction - Unit C - NFR Requirements
+
+## NFR Requirements (Unit C) - Answer NFRC4
+**Timestamp**: 2026-10-25T17:32:00Z
+**User Input**: "A"
+**AI Response**: Recorded NFRC4 = A (after user asked "Recommendation?" and I recommended A: B silently disables the product; C detects by bytes and double-fires on formatting drift; A detects semantically by command string). All four NFRC questions answered. Amended FD business-rules.md R1 with the semantic-presence note. Proceeding to artifacts.
+**Context**: Construction - Unit C - NFR Requirements - all questions answered
+
+## NFR Requirements (Unit C) - Artifacts
+**Timestamp**: 2026-10-25T17:40:00Z
+**User Input**: (none - automatic after NFRC4)
+**AI Response**: Wrote aidlc-docs/construction/unit-c-install/nfr-requirements/{nfr-requirements.md, tech-stack-decisions.md}. Security extension applied, zero findings. FD R1 amended with NFRC4-A semantic-presence note. Plan Steps 1-6 [x].
+**Context**: Construction - Unit C - NFR Requirements - artifacts generated, awaiting approval
+
+## NFR Requirements (Unit C) - Approval
+**Timestamp**: 2026-10-25T17:44:00Z
+**AI Prompt**: NFR Requirements completion message for Unit C (artifacts at aidlc-docs/construction/unit-c-install/nfr-requirements/)
+**User Response**: "approved"
+**Status**: Approved
+**Context**: Construction - Unit C - NFR Requirements approved; proceeding to NFR Design
+
+## NFR Design (Unit C) - Stage Entry
+**Timestamp**: 2026-10-25T17:47:00Z
+**User Input**: (none - automatic after NFR Requirements approval)
+**AI Response**: Created aidlc-docs/construction/plans/unit-c-install-nfr-design-plan.md: category applicability (resilience yes with project-wide decisions not re-asked; scalability no; performance confirm; security carries NFRC; logical components yes) + questions NRC1-NRC3 (interruption semantics, target directory validation, logging channel).
+**Context**: Construction - Unit C - NFR Design
+
+## NFR Design (Unit C) - Answer NRC1
+**Timestamp**: 2026-10-25T17:50:00Z
+**User Input**: "A"
+**AI Response**: Recorded NRC1 = A: resume-by-rerun recovery (idempotent sequence, no journal, no rollback). Presented NRC2 (target directory validation).
+**Context**: Construction - Unit C - NFR Design
+
+## NFR Design (Unit C) - Answer NRC2
+**Timestamp**: 2026-10-25T17:54:00Z
+**User Input**: "A"
+**AI Response**: Recorded NRC2 = A: accept any directory, no git-repo requirement. Presented NRC3 (installer logging channel).
+**Context**: Construction - Unit C - NFR Design
+
+## NFR Design (Unit C) - Answer NRC3
+**Timestamp**: 2026-10-25T17:58:00Z
+**User Input**: "A"
+**AI Response**: Recorded NRC3 = A: interactive channel only; the installer never writes the state-dir debug log. All three NRC questions answered (NRC1=A resume-by-rerun, NRC2=A any directory, NRC3=A interactive only). No ambiguities. Proceeding to artifacts.
+**Context**: Construction - Unit C - NFR Design - all questions answered
+
+## NFR Design (Unit C) - Artifacts
+**Timestamp**: 2026-10-25T18:02:00Z
+**User Input**: (none - automatic after NRC3)
+**AI Response**: Wrote aidlc-docs/construction/unit-c-install/nfr-design/{nfr-design-patterns.md, logical-components.md}. Resilience = resume-by-rerun pattern; security carried from NFR Requirements; no scaling; 7 logical components, no infrastructure elements. Plan Steps 1-6 [x].
+**Context**: Construction - Unit C - NFR Design - artifacts generated, awaiting approval
+
+## NFR Design (Unit C) - Approval
+**Timestamp**: 2026-10-25T18:05:00Z
+**AI Prompt**: NFR Design completion message for Unit C (artifacts at aidlc-docs/construction/unit-c-install/nfr-design/)
+**User Response**: "approved"
+**Status**: Approved
+**Context**: Construction - Unit C - NFR Design approved; proceeding to Code Generation
+
+## Code Generation (Unit C) - Plan
+**Timestamp**: 2026-10-25T18:10:00Z
+**User Input**: (none - automatic after NFR Design approval)
+**AI Response**: Created aidlc-docs/construction/plans/unit-c-install-c-code-generation-plan.md: 7 steps TDD red-first (installer.py + value objects, cli install subcommand, pyproject += install, Hypothesis properties, README installer section, N/A layers, code/summary.md). Out of scope: Units A/B/D changes.
+**Context**: Construction - Unit C - Code Generation - Part 1 plan created, awaiting user approval + execution vehicle
+
+## Code Generation (Unit C) - Approval
+**Timestamp**: 2026-10-25T18:15:00Z
+**AI Prompt**: Unit C code-generation plan (unit-c-install-c-code-generation-plan.md, 7 steps) + execution-vehicle question
+**User Response**: "B - I'll drive it" (vehicle B, agentic dev loop) then "A" (plan approved)
+**Status**: Approved (Part 1)
+**Context**: Construction - Unit C - Code Generation Part 1 approved; dev loop run pending (user drives)
